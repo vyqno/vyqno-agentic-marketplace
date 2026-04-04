@@ -40,11 +40,20 @@ export async function GET(request: NextRequest) {
 
     const supabase = createServiceRoleClient();
 
+    const ownerWallet = searchParams.get("owner_wallet");
+
     let query = supabase
       .from("agents")
       .select("*", { count: "exact" })
-      .eq("status", "active")
       .order("created_at", { ascending: false });
+
+    if (!ownerWallet) {
+      query = query.eq("status", "active");
+    }
+
+    if (ownerWallet) {
+      query = query.eq("owner_wallet", ownerWallet.toLowerCase());
+    }
 
     if (tags) {
       const tagArray = tags
@@ -108,6 +117,7 @@ export async function POST(request: NextRequest) {
       isInitiallyFree,
       initialMemory,
       ensName,
+      ownerWallet,
     } = body;
 
     if (!isNonEmptyString(name)) {
@@ -188,7 +198,8 @@ export async function POST(request: NextRequest) {
       .insert({
         name: normalizedName,
         description: description.trim(),
-        owner_address: "0x0000000000000000000000000000000000000000",
+        owner_address: typeof ownerWallet === "string" ? ownerWallet : "0x0000000000000000000000000000000000000000",
+        owner_wallet: typeof ownerWallet === "string" ? ownerWallet.toLowerCase() : null,
         wallet_address: walletAddress,
         skill_tags: tags,
         price_usdc: price,
