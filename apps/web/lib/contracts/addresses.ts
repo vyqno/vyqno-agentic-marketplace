@@ -3,7 +3,7 @@
 // ═══════════════════════════════════════════════════════════════
 
 export const AGENT_REGISTRY_ADDRESS =
-  "0x67c1b682a117422676e3cc8581a508395c56423d" as const;
+  "0x3e277fb14ce6e1f4da5391cce381869282fd46b5" as const;
 
 export const BASE_SEPOLIA_CHAIN_ID = 84532;
 
