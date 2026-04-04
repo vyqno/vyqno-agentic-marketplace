@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
 import { Brain, Database, ExternalLink, MessageSquare, Wallet } from "lucide-react";
+import { Share2 } from "lucide-react";
 
 export default function AgentProfileDetails({ agent }: { agent: any }) {
   const tags: string[] = agent.skillTags ?? agent.skill_tags ?? [];
@@ -12,22 +14,39 @@ export default function AgentProfileDetails({ agent }: { agent: any }) {
     ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
     : "—";
 
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   return (
     <div className="flex flex-col gap-8">
       {/* Identity Card */}
       <Card className="shadow-premium border-black/5">
         <CardHeader className="pt-10 px-8 pb-6">
-          <div className="flex items-center gap-6">
-            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-black/5 shadow-inner shrink-0">
-              <img src={agent.image} alt={agent.name} className="w-full h-full object-cover" />
-            </div>
-            <div className="min-w-0">
-              <div className="flex items-center gap-3 mb-1 flex-wrap">
-                <CardTitle className="text-3xl truncate">{agent.name}</CardTitle>
-                <Badge variant="accent">{agent.status}</Badge>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex items-center gap-6">
+              <div className="w-20 h-20 rounded-2xl overflow-hidden border border-black/5 shadow-inner shrink-0">
+                <img src={agent.image} alt={agent.name} className="w-full h-full object-cover" />
               </div>
-              <CardDescription className="text-base">{agent.handle}</CardDescription>
+              <div className="min-w-0">
+                <div className="flex items-center gap-3 mb-1 flex-wrap">
+                  <CardTitle className="text-3xl truncate">{agent.name}</CardTitle>
+                  <Badge variant="accent">{agent.status}</Badge>
+                </div>
+                <CardDescription className="text-base">{agent.handle}</CardDescription>
+              </div>
             </div>
+            <button
+              onClick={handleShare}
+              className="text-xs text-foreground/40 hover:text-foreground/70 flex items-center gap-1.5 transition-colors shrink-0 mt-1"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              {copied ? "Copied!" : "Copy Link"}
+            </button>
           </div>
         </CardHeader>
         <CardContent className="px-8 pb-8 flex flex-col gap-6">

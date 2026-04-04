@@ -39,29 +39,60 @@ export default function ChatInterface({
     if (!input.trim() || isLoading || isPaymentPending) return;
 
     const userMessage = { id: Date.now().toString(), role: "user", content: input };
-    setMessages(prev => [...prev, userMessage]);
+    const assistantId = (Date.now() + 1).toString();
+    setMessages(prev => [...prev, userMessage, { id: assistantId, role: "assistant", content: "" }]);
     setInput("");
     setIsLoading(true);
 
     try {
-      const data = await fetchWithPayment(`/api/agents/${agentName}/ask`, {
+      const response = await fetchWithPayment(`/api/agents/${agentName}/ask/stream`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userMessage.content }),
       });
 
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: (data as any)?.answer ?? "No response received.",
-      }]);
+      // fetchWithPayment returns the raw Response after payment is settled.
+      // If the response body is not a stream (e.g. payment hook returned parsed JSON),
+      // fall back to the plain answer field.
+      const reader = (response as any).body?.getReader();
+
+      if (!reader) {
+        // Fallback: payment hook consumed the body and returned parsed JSON
+        const data = response as any;
+        setMessages(prev => prev.map(m =>
+          m.id === assistantId ? { ...m, content: data?.answer ?? "No response received." } : m
+        ));
+        return;
+      }
+
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          if (!line.startsWith("data: ")) continue;
+          const data = line.slice(6).trim();
+          if (data === "[DONE]") break;
+          try {
+            const token = JSON.parse(data);
+            setMessages(prev => prev.map(m =>
+              m.id === assistantId ? { ...m, content: m.content + token } : m
+            ));
+          } catch {}
+        }
+      }
     } catch (err: any) {
       console.error("Chat error:", err);
-      setMessages(prev => [...prev, {
-        id: (Date.now() + 1).toString(),
-        role: "assistant",
-        content: `Error: ${err?.message ?? "Something went wrong."}`,
-      }]);
+      setMessages(prev => prev.map(m =>
+        m.id === assistantId
+          ? { ...m, content: `Error: ${err?.message ?? "Something went wrong."}` }
+          : m
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -112,7 +143,7 @@ export default function ChatInterface({
               </div>
             </motion.div>
           ))}
-          {isLoading && (
+          {isLoading && messages[messages.length - 1]?.content === "" && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}

@@ -6,8 +6,9 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Loader2, Save, Plus, X, Upload, ExternalLink } from "lucide-react";
+import { Loader2, Save, Plus, X, Upload, ExternalLink, Wallet, TrendingUp, BarChart2, Zap } from "lucide-react";
 import Link from "next/link";
+import TopupModal from "@/components/profile/TopupModal";
 
 function Avatar({ seed, size = 80 }: { seed: string; size?: number }) {
   return (
@@ -186,13 +187,15 @@ export default function UserProfile() {
   const account = useActiveAccount();
   const wallet = account?.address ?? null;
 
-  const [profile, setProfile] = useState<{ display_name?: string; avatar_seed?: string; bio?: string } | null>(null);
+  const [profile, setProfile] = useState<{ display_name?: string; avatar_seed?: string; bio?: string; usdc_credits?: number } | null>(null);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loadingProfile, setLoadingProfile] = useState(false);
   const [savingProfile, setSavingProfile] = useState(false);
   const [editName, setEditName] = useState("");
   const [editBio, setEditBio] = useState("");
   const [editAvatarSeed, setEditAvatarSeed] = useState("");
+  const [showTopup, setShowTopup] = useState(false);
+  const [credits, setCredits] = useState(0);
 
   const fetchProfile = async (w: string) => {
     setLoadingProfile(true);
@@ -204,6 +207,7 @@ export default function UserProfile() {
     const aJson = await aRes.json();
     const p = pJson.user ?? {};
     setProfile(p);
+    setCredits(parseFloat(p.usdc_credits ?? 0));
     setEditName(p.display_name ?? "");
     setEditBio(p.bio ?? "");
     setEditAvatarSeed(p.avatar_seed ?? "");
@@ -254,6 +258,81 @@ export default function UserProfile() {
 
   return (
     <div className="pt-32 pb-20 px-6 max-w-4xl mx-auto flex flex-col gap-12">
+      {showTopup && wallet && (
+        <TopupModal
+          walletAddress={wallet}
+          onClose={() => setShowTopup(false)}
+          onSuccess={(newBalance) => { setCredits(newBalance); setShowTopup(false); }}
+        />
+      )}
+
+      {/* Credits bar */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className="flex items-center justify-between bg-black text-white rounded-2xl px-6 py-4"
+      >
+        <div className="flex items-center gap-3">
+          <Wallet className="w-4 h-4 text-white/60" />
+          <div>
+            <p className="text-[10px] uppercase font-bold tracking-widest text-white/40">USDC Credits</p>
+            <p className="font-outfit font-black text-xl">{credits.toFixed(4)} <span className="text-white/40 text-sm font-normal">USDC</span></p>
+          </div>
+        </div>
+        <Button
+          onClick={() => setShowTopup(true)}
+          className="bg-white text-black hover:bg-white/90 rounded-full px-5 py-2 text-sm font-bold h-auto"
+        >
+          Add Credits · Pay with UPI
+        </Button>
+      </motion.div>
+
+      {/* Creator Earnings */}
+      {agents.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1 }}
+          className="grid grid-cols-3 gap-4"
+        >
+          <Card className="border-black/5">
+            <CardContent className="p-5 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <BarChart2 className="w-4 h-4 text-foreground/30" />
+                <span className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Total Queries</span>
+              </div>
+              <p className="font-outfit font-black text-2xl">
+                {agents.reduce((sum, a) => sum + (a.query_count ?? 0), 0).toLocaleString()}
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-black/5">
+            <CardContent className="p-5 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-foreground/30" />
+                <span className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Est. Earnings</span>
+              </div>
+              <p className="font-outfit font-black text-2xl">
+                ${agents.reduce((sum, a) => sum + (a.is_free ? 0 : (a.query_count ?? 0) * (a.price_usdc ?? 0)), 0).toFixed(4)}
+                <span className="text-foreground/40 text-sm font-normal ml-1">USDC</span>
+              </p>
+            </CardContent>
+          </Card>
+          <Card className="border-black/5">
+            <CardContent className="p-5 flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-foreground/30" />
+                <span className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Agents Live</span>
+              </div>
+              <p className="font-outfit font-black text-2xl">
+                {agents.filter((a) => a.status === "active").length}
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
       {/* Identity */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

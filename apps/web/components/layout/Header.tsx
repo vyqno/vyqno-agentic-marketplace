@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { ConnectButton, useActiveAccount } from "thirdweb/react";
 import { client } from "@/lib/thirdweb";
 import { baseSepolia } from "thirdweb/chains";
@@ -11,6 +13,7 @@ const BASE_NAV = [
   { href: "/", label: "Marketplace" },
   { href: "/browse", label: "Browse" },
   { href: "/create", label: "Deploy Agent" },
+  { href: "/connect", label: "Connect" },
 ];
 
 export default function Header() {
@@ -19,6 +22,22 @@ export default function Header() {
   const NAV_LINKS = account
     ? [...BASE_NAV, { href: "/profile", label: "Profile" }]
     : BASE_NAV;
+
+  const [credits, setCredits] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (!account?.address) {
+      setCredits(null);
+      return;
+    }
+    fetch(`/api/user?wallet=${account.address}`)
+      .then((r) => r.json())
+      .then((data) => {
+        const val = data?.user?.usdc_credits;
+        setCredits(val != null ? parseFloat(val) : null);
+      })
+      .catch(() => setCredits(null));
+  }, [account?.address]);
 
   const wallets = [
     inAppWallet({
@@ -30,42 +49,63 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 px-6 py-5">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-black/5 px-6 py-4">
       <div className="mx-auto max-w-7xl flex items-center justify-between">
-        <nav className="flex items-center gap-8">
+        {/* Branding */}
+        <Link href="/" className="flex flex-col group">
+          <span className="font-logo text-xl tracking-tighter transition-colors group-hover:text-accent">agentnet</span>
+          <span className="font-mono text-[7px] opacity-20 uppercase tracking-[0.4em] -mt-1">Reality // Design</span>
+        </Link>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex items-center gap-10">
           {NAV_LINKS.map(({ href, label }: { href: string; label: string }) => {
             const isActive = pathname === href;
             return (
               <Link
                 key={href}
                 href={href}
-                className="relative text-sm font-medium transition-colors duration-200 group"
+                className="relative text-[10px] font-mono font-bold uppercase tracking-widest transition-colors duration-200"
               >
-                <span className={isActive ? "text-foreground" : "text-foreground/50 hover:text-foreground/80"}>
+                <span className={isActive ? "text-black" : "text-black/40 hover:text-black/80"}>
                   {label}
                 </span>
                 {isActive && (
-                  <span className="absolute -bottom-1 left-0 right-0 h-px bg-foreground rounded-full" />
+                  <motion.span 
+                    layoutId="nav-underline"
+                    className="absolute -bottom-2 left-0 right-0 h-[2px] bg-black" 
+                  />
                 )}
               </Link>
             );
           })}
         </nav>
 
-        <ConnectButton
-          client={client}
-          chain={baseSepolia}
-          wallets={wallets}
-          theme="dark"
-          connectButton={{
-            className: "!bg-white/10 !text-white !rounded-full !px-5 !py-2 !h-auto !text-sm !font-medium hover:!bg-white/20 !transition-all !border !border-white/10 !backdrop-blur-sm",
-            label: "Connect",
-          }}
-          accountAbstraction={{
-            chain: baseSepolia,
-            sponsorGas: true,
-          }}
-        />
+        {/* Rigth Actions */}
+        <div className="flex items-center gap-4">
+          {account && credits != null && (
+            <Link href="/profile">
+              <span className="font-mono text-[10px] border border-black/10 px-3 py-1.5 hover:bg-black hover:text-white transition-all cursor-pointer">
+                CRED_BAL: ${credits.toFixed(2)}
+              </span>
+            </Link>
+          )}
+
+          <ConnectButton
+            client={client}
+            chain={baseSepolia}
+            wallets={wallets}
+            theme="light"
+            connectButton={{
+              className: "!bg-transparent !text-black !rounded-none !px-4 !py-1.5 !h-auto !text-[9px] !font-mono !font-bold !uppercase !tracking-widest hover:!bg-black hover:!text-white !transition-all !border !border-black/10",
+              label: "CONNECT_ID",
+            }}
+            accountAbstraction={{
+              chain: baseSepolia,
+              sponsorGas: true,
+            }}
+          />
+        </div>
       </div>
     </header>
   );
