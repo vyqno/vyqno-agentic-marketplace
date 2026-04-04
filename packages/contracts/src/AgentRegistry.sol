@@ -29,6 +29,7 @@ contract AgentRegistry is Ownable, Pausable, ReentrancyGuard {
         address walletAddress;
         string endpoint;
         string metadataURI;
+        string ensName; // Optional ENS/Basename associated with the agent
         AgentStatus status;
         uint256 totalQueries;
         uint256 registeredAt;
@@ -63,7 +64,8 @@ contract AgentRegistry is Ownable, Pausable, ReentrancyGuard {
         address indexed owner,
         address walletAddress,
         string endpoint,
-        string metadataURI
+        string metadataURI,
+        string ensName
     );
 
     event AgentUpdated(
@@ -144,11 +146,13 @@ contract AgentRegistry is Ownable, Pausable, ReentrancyGuard {
     /// @param walletAddress The agent's programmatic wallet on Base Sepolia
     /// @param endpoint The API endpoint for querying the agent
     /// @param metadataURI URI pointing to agent metadata
+    /// @param ensName Optional ENS/Basename (e.g., satoshi.base.eth)
     function registerAgent(
         string calldata name,
         address walletAddress,
         string calldata endpoint,
-        string calldata metadataURI
+        string calldata metadataURI,
+        string calldata ensName
     ) external whenNotPaused nonReentrant {
         _validateName(name);
         if (walletAddress == address(0)) revert InvalidAddress();
@@ -159,6 +163,7 @@ contract AgentRegistry is Ownable, Pausable, ReentrancyGuard {
             walletAddress: walletAddress,
             endpoint: endpoint,
             metadataURI: metadataURI,
+            ensName: ensName,
             status: AgentStatus.Active,
             totalQueries: 0,
             registeredAt: block.timestamp,
@@ -173,7 +178,7 @@ contract AgentRegistry is Ownable, Pausable, ReentrancyGuard {
             totalAgents++;
         }
 
-        emit AgentRegistered(name, name, msg.sender, walletAddress, endpoint, metadataURI);
+        emit AgentRegistered(name, name, msg.sender, walletAddress, endpoint, metadataURI, ensName);
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -257,6 +262,7 @@ contract AgentRegistry is Ownable, Pausable, ReentrancyGuard {
         _agents[name].owner = newOwner;
         _agents[name].updatedAt = block.timestamp;
 
+        _removeFromOwnerList(previousOwner, name);
         _ownerAgents[newOwner].push(name);
 
         emit AgentOwnershipTransferred(name, name, previousOwner, newOwner);
@@ -345,10 +351,43 @@ contract AgentRegistry is Ownable, Pausable, ReentrancyGuard {
     //  INTERNAL
     // ═══════════════════════════════════════════════════════════════════════
 
-    /// @dev Validates agent name: length must be within bounds
+    /// @dev Validates agent name: length and [a-z0-9-] characters.
     function _validateName(string calldata name) internal pure {
-        uint256 len = bytes(name).length;
+        bytes memory b = bytes(name);
+        uint256 len = b.length;
+
         if (len < MIN_NAME_LENGTH) revert InvalidName("name too short");
         if (len > MAX_NAME_LENGTH) revert InvalidName("name too long");
+
+        // Basic character validation: [a-z0-9-]
+        // Cannot start or end with a hyphen.
+        if (b[0] == "-" || b[len - 1] == "-") {
+            revert InvalidName("cannot start/end with hyphen");
+        }
+
+        for (uint256 i = 0; i < len; i++) {
+            bytes1 char = b[i];
+            if (
+                !(char >= "a" && char <= "z") &&
+                !(char >= "0" && char <= "9") &&
+                !(char == "-")
+            ) {
+                revert InvalidName("invalid character");
+            }
+        }
+    }
+
+    /// @dev Internal helper to remove a name from an owner's dynamic list
+    function _removeFromOwnerList(address owner_, string memory name) internal {
+        string[] storage list = _ownerAgents[owner_];
+        uint256 len = list.length;
+        for (uint256 i = 0; i < len; i++) {
+            if (keccak256(bytes(list[i])) == keccak256(bytes(name))) {
+                // Swap with last element and pop
+                list[i] = list[len - 1];
+                list.pop();
+                break;
+            }
+        }
     }
 }

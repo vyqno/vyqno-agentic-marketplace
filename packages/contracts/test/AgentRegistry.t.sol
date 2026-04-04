@@ -20,7 +20,7 @@ contract AgentRegistryTest is Test {
     // Mirror events for expectEmit
     event AgentRegistered(
         string indexed nameHash, string name, address indexed owner,
-        address walletAddress, string endpoint, string metadataURI
+        address walletAddress, string endpoint, string metadataURI, string ensName
     );
     event AgentUpdated(
         string indexed nameHash, string name, address indexed owner,
@@ -75,7 +75,8 @@ contract AgentRegistryTest is Test {
             "defi-auditor",
             address(0xAA1137),
             "https://agentnet.xyz/api/agents/defi-auditor/ask",
-            "ipfs://QmMeta"
+            "ipfs://QmMeta",
+            ""
         );
 
         AgentRegistry.Agent memory agent = registry.getAgent("defi-auditor");
@@ -92,29 +93,29 @@ contract AgentRegistryTest is Test {
 
     function test_RegisterAgent_IncrementsCounters() public {
         vm.prank(alice);
-        registry.registerAgent("bot-1", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("bot-1", address(0x1), "https://e.com", "ipfs://m", "");
         assertEq(registry.totalAgents(), 1);
         assertEq(registry.getAllAgentsCount(), 1);
 
         vm.prank(bob);
-        registry.registerAgent("bot-2", address(0x2), "https://e.com", "ipfs://m");
+        registry.registerAgent("bot-2", address(0x2), "https://e.com", "ipfs://m", "");
         assertEq(registry.totalAgents(), 2);
         assertEq(registry.getAllAgentsCount(), 2);
     }
 
     function test_RegisterAgent_EmitsEvent() public {
         vm.prank(alice);
-        vm.expectEmit(false, true, false, true);
+        vm.expectEmit(true, true, true, true);
         emit AgentRegistered(
             "defi-auditor", "defi-auditor", alice,
-            address(0xAA), "https://e.com", "ipfs://m"
+            address(0xAA), "https://e.com", "ipfs://m", ""
         );
-        registry.registerAgent("defi-auditor", address(0xAA), "https://e.com", "ipfs://m");
+        registry.registerAgent("defi-auditor", address(0xAA), "https://e.com", "ipfs://m", "");
     }
 
     function test_RegisterAgent_AddsToOwnerList() public {
         vm.prank(alice);
-        registry.registerAgent("my-bot", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("my-bot", address(0x1), "https://e.com", "ipfs://m", "");
 
         string[] memory agents = registry.getOwnerAgents(alice);
         assertEq(agents.length, 1);
@@ -127,17 +128,17 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_RegisterAgent_NameAlreadyTaken() public {
         vm.prank(alice);
-        registry.registerAgent("taken", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("taken", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(bob);
         vm.expectRevert(abi.encodeWithSelector(AgentRegistry.AgentAlreadyExists.selector, "taken"));
-        registry.registerAgent("taken", address(0x2), "https://e2.com", "ipfs://m2");
+        registry.registerAgent("taken", address(0x2), "https://e2.com", "ipfs://m2", "");
     }
 
     function test_Revert_RegisterAgent_NameTooShort() public {
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(AgentRegistry.InvalidName.selector, "name too short"));
-        registry.registerAgent("ab", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("ab", address(0x1), "https://e.com", "ipfs://m", "");
     }
 
     function test_Revert_RegisterAgent_NameTooLong() public {
@@ -145,12 +146,12 @@ contract AgentRegistryTest is Test {
         string memory longName = "aaaaaaaaaabbbbbbbbbbccccccccccddddddddddeeeeeeeeeefffffffffffffff11";
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(AgentRegistry.InvalidName.selector, "name too long"));
-        registry.registerAgent(longName, address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent(longName, address(0x1), "https://e.com", "ipfs://m", "");
     }
 
     function test_RegisterAgent_ExactMinLength() public {
         vm.prank(alice);
-        registry.registerAgent("abc", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("abc", address(0x1), "https://e.com", "ipfs://m", "");
         assertTrue(registry.getAgent("abc").exists);
     }
 
@@ -159,14 +160,14 @@ contract AgentRegistryTest is Test {
         string memory maxName = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
         assertEq(bytes(maxName).length, 64);
         vm.prank(alice);
-        registry.registerAgent(maxName, address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent(maxName, address(0x1), "https://e.com", "ipfs://m", "");
         assertTrue(registry.getAgent(maxName).exists);
     }
 
     function test_Revert_RegisterAgent_ZeroWallet() public {
         vm.prank(alice);
         vm.expectRevert(AgentRegistry.InvalidAddress.selector);
-        registry.registerAgent("zero-wallet", address(0), "https://e.com", "ipfs://m");
+        registry.registerAgent("zero-wallet", address(0), "https://e.com", "ipfs://m", "");
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -185,7 +186,7 @@ contract AgentRegistryTest is Test {
 
     function test_IsNameAvailable_False() public {
         vm.prank(alice);
-        registry.registerAgent("taken-name", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("taken-name", address(0x1), "https://e.com", "ipfs://m", "");
         assertFalse(registry.isNameAvailable("taken-name"));
     }
 
@@ -195,7 +196,7 @@ contract AgentRegistryTest is Test {
 
     function test_UpdateAgent_ByOwner() public {
         vm.prank(alice);
-        registry.registerAgent("updatable", address(0x1), "https://old.com", "ipfs://old");
+        registry.registerAgent("updatable", address(0x1), "https://old.com", "ipfs://old", "");
 
         vm.warp(block.timestamp + 100);
         vm.prank(alice);
@@ -209,7 +210,7 @@ contract AgentRegistryTest is Test {
 
     function test_UpdateAgent_EmitsEvent() public {
         vm.prank(alice);
-        registry.registerAgent("emit-update", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("emit-update", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         vm.expectEmit(false, true, false, true);
@@ -219,7 +220,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_UpdateAgent_NotOwner() public {
         vm.prank(alice);
-        registry.registerAgent("alice-only", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("alice-only", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(bob);
         vm.expectRevert(abi.encodeWithSelector(AgentRegistry.NotAgentOwner.selector, "alice-only", bob));
@@ -238,7 +239,7 @@ contract AgentRegistryTest is Test {
 
     function test_UpdateWallet() public {
         vm.prank(alice);
-        registry.registerAgent("wallet-test", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("wallet-test", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         registry.updateWallet("wallet-test", address(0xBEEF));
@@ -248,7 +249,7 @@ contract AgentRegistryTest is Test {
 
     function test_UpdateWallet_EmitsEvent() public {
         vm.prank(alice);
-        registry.registerAgent("wallet-emit", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("wallet-emit", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         vm.expectEmit(false, true, false, true);
@@ -258,7 +259,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_UpdateWallet_ZeroAddress() public {
         vm.prank(alice);
-        registry.registerAgent("wallet-zero", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("wallet-zero", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         vm.expectRevert(AgentRegistry.InvalidAddress.selector);
@@ -267,7 +268,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_UpdateWallet_NotOwner() public {
         vm.prank(alice);
-        registry.registerAgent("wallet-auth", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("wallet-auth", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(bob);
         vm.expectRevert(abi.encodeWithSelector(AgentRegistry.NotAgentOwner.selector, "wallet-auth", bob));
@@ -280,7 +281,7 @@ contract AgentRegistryTest is Test {
 
     function test_PauseAgent() public {
         vm.prank(alice);
-        registry.registerAgent("pausable", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("pausable", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         registry.pauseAgent("pausable");
@@ -290,7 +291,7 @@ contract AgentRegistryTest is Test {
 
     function test_PauseAgent_EmitsEvent() public {
         vm.prank(alice);
-        registry.registerAgent("pause-evt", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("pause-evt", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         vm.expectEmit(false, false, false, true);
@@ -300,7 +301,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_PauseAgent_AlreadyPaused() public {
         vm.prank(alice);
-        registry.registerAgent("double-pause", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("double-pause", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(alice);
         registry.pauseAgent("double-pause");
 
@@ -315,7 +316,7 @@ contract AgentRegistryTest is Test {
 
     function test_ActivateAgent_AfterPause() public {
         vm.prank(alice);
-        registry.registerAgent("reactivate", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("reactivate", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(alice);
         registry.pauseAgent("reactivate");
 
@@ -327,7 +328,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_ActivateAgent_AlreadyActive() public {
         vm.prank(alice);
-        registry.registerAgent("already-active", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("already-active", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         vm.expectRevert(abi.encodeWithSelector(
@@ -340,7 +341,7 @@ contract AgentRegistryTest is Test {
 
     function test_DecommissionAgent_FromActive() public {
         vm.prank(alice);
-        registry.registerAgent("decomm-active", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("decomm-active", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         registry.decommissionAgent("decomm-active");
@@ -350,7 +351,7 @@ contract AgentRegistryTest is Test {
 
     function test_DecommissionAgent_FromPaused() public {
         vm.prank(alice);
-        registry.registerAgent("decomm-paused", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("decomm-paused", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(alice);
         registry.pauseAgent("decomm-paused");
 
@@ -362,7 +363,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_DecommissionAgent_AlreadyDecommissioned() public {
         vm.prank(alice);
-        registry.registerAgent("decomm-twice", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("decomm-twice", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(alice);
         registry.decommissionAgent("decomm-twice");
 
@@ -377,7 +378,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_PauseAgent_NotOwner() public {
         vm.prank(alice);
-        registry.registerAgent("no-pause", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("no-pause", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(bob);
         vm.expectRevert(abi.encodeWithSelector(AgentRegistry.NotAgentOwner.selector, "no-pause", bob));
@@ -390,7 +391,7 @@ contract AgentRegistryTest is Test {
 
     function test_TransferOwnership() public {
         vm.prank(alice);
-        registry.registerAgent("transferable", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("transferable", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         registry.transferAgentOwnership("transferable", bob);
@@ -400,7 +401,7 @@ contract AgentRegistryTest is Test {
 
     function test_TransferOwnership_EmitsEvent() public {
         vm.prank(alice);
-        registry.registerAgent("xfer-evt", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("xfer-evt", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         vm.expectEmit(false, true, true, true);
@@ -410,7 +411,7 @@ contract AgentRegistryTest is Test {
 
     function test_TransferOwnership_NewOwnerCanUpdate() public {
         vm.prank(alice);
-        registry.registerAgent("xfer-update", address(0x1), "https://a.com", "ipfs://a");
+        registry.registerAgent("xfer-update", address(0x1), "https://a.com", "ipfs://a", "");
         vm.prank(alice);
         registry.transferAgentOwnership("xfer-update", bob);
 
@@ -421,7 +422,7 @@ contract AgentRegistryTest is Test {
 
     function test_TransferOwnership_OldOwnerLosesAccess() public {
         vm.prank(alice);
-        registry.registerAgent("no-access", address(0x1), "https://a.com", "ipfs://a");
+        registry.registerAgent("no-access", address(0x1), "https://a.com", "ipfs://a", "");
         vm.prank(alice);
         registry.transferAgentOwnership("no-access", bob);
 
@@ -432,7 +433,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_TransferOwnership_ToZero() public {
         vm.prank(alice);
-        registry.registerAgent("no-zero-xfer", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("no-zero-xfer", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(alice);
         vm.expectRevert(AgentRegistry.InvalidAddress.selector);
@@ -441,7 +442,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_TransferOwnership_NotOwner() public {
         vm.prank(alice);
-        registry.registerAgent("xfer-auth", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("xfer-auth", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(bob);
         vm.expectRevert(abi.encodeWithSelector(AgentRegistry.NotAgentOwner.selector, "xfer-auth", bob));
@@ -454,7 +455,7 @@ contract AgentRegistryTest is Test {
 
     function test_RecordQuery_IncrementsCounters() public {
         vm.prank(alice);
-        registry.registerAgent("query-bot", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("query-bot", address(0x1), "https://e.com", "ipfs://m", "");
 
         registry.recordQuery("query-bot");
         registry.recordQuery("query-bot");
@@ -466,7 +467,7 @@ contract AgentRegistryTest is Test {
 
     function test_RecordQuery_EmitsEvent() public {
         vm.prank(alice);
-        registry.registerAgent("query-evt", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("query-evt", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.expectEmit(false, false, false, true);
         emit QueryRecorded("query-evt", "query-evt", 1, 1);
@@ -480,7 +481,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_RecordQuery_PausedAgent() public {
         vm.prank(alice);
-        registry.registerAgent("paused-q", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("paused-q", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(alice);
         registry.pauseAgent("paused-q");
 
@@ -490,7 +491,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_RecordQuery_DecommissionedAgent() public {
         vm.prank(alice);
-        registry.registerAgent("decomm-q", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("decomm-q", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(alice);
         registry.decommissionAgent("decomm-q");
 
@@ -500,9 +501,9 @@ contract AgentRegistryTest is Test {
 
     function test_GlobalQueryCount_MultipleAgents() public {
         vm.prank(alice);
-        registry.registerAgent("ga-1", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("ga-1", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(bob);
-        registry.registerAgent("ga-2", address(0x2), "https://e.com", "ipfs://m");
+        registry.registerAgent("ga-2", address(0x2), "https://e.com", "ipfs://m", "");
 
         registry.recordQuery("ga-1");
         registry.recordQuery("ga-1");
@@ -519,9 +520,9 @@ contract AgentRegistryTest is Test {
 
     function test_GetOwnerAgents_CorrectList() public {
         vm.startPrank(alice);
-        registry.registerAgent("a-1", address(0x1), "https://e.com", "ipfs://m");
-        registry.registerAgent("a-2", address(0x2), "https://e.com", "ipfs://m");
-        registry.registerAgent("a-3", address(0x3), "https://e.com", "ipfs://m");
+        registry.registerAgent("a-1", address(0x1), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("a-2", address(0x2), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("a-3", address(0x3), "https://e.com", "ipfs://m", "");
         vm.stopPrank();
 
         string[] memory agents = registry.getOwnerAgents(alice);
@@ -536,8 +537,8 @@ contract AgentRegistryTest is Test {
 
     function test_GetOwnerAgentCount() public {
         vm.startPrank(alice);
-        registry.registerAgent("cnt-1", address(0x1), "https://e.com", "ipfs://m");
-        registry.registerAgent("cnt-2", address(0x2), "https://e.com", "ipfs://m");
+        registry.registerAgent("cnt-1", address(0x1), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("cnt-2", address(0x2), "https://e.com", "ipfs://m", "");
         vm.stopPrank();
 
         assertEq(registry.getOwnerAgentCount(alice), 2);
@@ -546,9 +547,9 @@ contract AgentRegistryTest is Test {
 
     function test_IndependentOwnerLists() public {
         vm.prank(alice);
-        registry.registerAgent("alice-bot", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("alice-bot", address(0x1), "https://e.com", "ipfs://m", "");
         vm.prank(bob);
-        registry.registerAgent("bob-bot", address(0x2), "https://e.com", "ipfs://m");
+        registry.registerAgent("bob-bot", address(0x2), "https://e.com", "ipfs://m", "");
 
         assertEq(registry.getOwnerAgents(alice).length, 1);
         assertEq(registry.getOwnerAgents(bob).length, 1);
@@ -562,11 +563,11 @@ contract AgentRegistryTest is Test {
 
     function test_GetAllAgents_Paginated() public {
         vm.startPrank(alice);
-        registry.registerAgent("p-1", address(0x1), "https://e.com", "ipfs://m");
-        registry.registerAgent("p-2", address(0x2), "https://e.com", "ipfs://m");
-        registry.registerAgent("p-3", address(0x3), "https://e.com", "ipfs://m");
-        registry.registerAgent("p-4", address(0x4), "https://e.com", "ipfs://m");
-        registry.registerAgent("p-5", address(0x5), "https://e.com", "ipfs://m");
+        registry.registerAgent("p-1", address(0x1), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("p-2", address(0x2), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("p-3", address(0x3), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("p-4", address(0x4), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("p-5", address(0x5), "https://e.com", "ipfs://m", "");
         vm.stopPrank();
 
         // Page 1
@@ -589,7 +590,7 @@ contract AgentRegistryTest is Test {
 
     function test_GetAllAgents_OffsetBeyondLength() public {
         vm.prank(alice);
-        registry.registerAgent("solo", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("solo", address(0x1), "https://e.com", "ipfs://m", "");
 
         string[] memory result = registry.getAllAgents(10, 5);
         assertEq(result.length, 0);
@@ -640,12 +641,12 @@ contract AgentRegistryTest is Test {
 
         vm.prank(alice);
         vm.expectRevert(Pausable.EnforcedPause.selector);
-        registry.registerAgent("paused-reg", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("paused-reg", address(0x1), "https://e.com", "ipfs://m", "");
     }
 
     function test_Revert_Update_WhenPaused() public {
         vm.prank(alice);
-        registry.registerAgent("pause-update", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("pause-update", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(admin);
         registry.pause();
@@ -657,7 +658,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_UpdateWallet_WhenPaused() public {
         vm.prank(alice);
-        registry.registerAgent("pause-wallet", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("pause-wallet", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(admin);
         registry.pause();
@@ -669,7 +670,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_Transfer_WhenPaused() public {
         vm.prank(alice);
-        registry.registerAgent("pause-xfer", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("pause-xfer", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(admin);
         registry.pause();
@@ -681,7 +682,7 @@ contract AgentRegistryTest is Test {
 
     function test_Revert_RecordQuery_WhenPaused() public {
         vm.prank(alice);
-        registry.registerAgent("pause-query", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("pause-query", address(0x1), "https://e.com", "ipfs://m", "");
 
         vm.prank(admin);
         registry.pause();
@@ -693,7 +694,7 @@ contract AgentRegistryTest is Test {
     function test_PauseAgent_WorksWhenRegistryPaused() public {
         // Agent-level pause != registry pause. Agent owner can still pause their agent.
         vm.prank(alice);
-        registry.registerAgent("agent-pause-ok", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("agent-pause-ok", address(0x1), "https://e.com", "ipfs://m", "");
 
         // Note: pauseAgent is NOT whenNotPaused, so it works even when registry is paused
         // This is intentional — owners should always be able to stop their agents
@@ -709,7 +710,7 @@ contract AgentRegistryTest is Test {
     function test_Integration_FullLifecycle() public {
         // 1. Register
         vm.prank(alice);
-        registry.registerAgent("lifecycle", address(0xCAFE), "https://v1.com", "ipfs://v1");
+        registry.registerAgent("lifecycle", address(0xCAFE), "https://v1.com", "ipfs://v1", "");
         assertTrue(registry.getAgent("lifecycle").exists);
         assertEq(uint8(registry.getAgent("lifecycle").status), uint8(AgentRegistry.AgentStatus.Active));
 
@@ -765,12 +766,12 @@ contract AgentRegistryTest is Test {
     function test_Integration_MultipleAgents_MultipleOwners() public {
         // Alice creates 2, Bob creates 1
         vm.startPrank(alice);
-        registry.registerAgent("alice-1", address(0x1), "https://e.com", "ipfs://m");
-        registry.registerAgent("alice-2", address(0x2), "https://e.com", "ipfs://m");
+        registry.registerAgent("alice-1", address(0x1), "https://e.com", "ipfs://m", "");
+        registry.registerAgent("alice-2", address(0x2), "https://e.com", "ipfs://m", "");
         vm.stopPrank();
 
         vm.prank(bob);
-        registry.registerAgent("bob-1", address(0x3), "https://e.com", "ipfs://m");
+        registry.registerAgent("bob-1", address(0x3), "https://e.com", "ipfs://m", "");
 
         assertEq(registry.totalAgents(), 3);
         assertEq(registry.getOwnerAgentCount(alice), 2);
@@ -789,7 +790,7 @@ contract AgentRegistryTest is Test {
     function test_Integration_AdminEmergencyPause() public {
         // Setup
         vm.prank(alice);
-        registry.registerAgent("emergency", address(0x1), "https://e.com", "ipfs://m");
+        registry.registerAgent("emergency", address(0x1), "https://e.com", "ipfs://m", "");
 
         // Admin pauses
         vm.prank(admin);
@@ -798,7 +799,7 @@ contract AgentRegistryTest is Test {
         // Nothing works
         vm.prank(bob);
         vm.expectRevert(Pausable.EnforcedPause.selector);
-        registry.registerAgent("new-during-pause", address(0x2), "https://e.com", "ipfs://m");
+        registry.registerAgent("new-during-pause", address(0x2), "https://e.com", "ipfs://m", "");
 
         vm.expectRevert(Pausable.EnforcedPause.selector);
         registry.recordQuery("emergency");
@@ -809,8 +810,68 @@ contract AgentRegistryTest is Test {
 
         // Everything works again
         vm.prank(bob);
-        registry.registerAgent("after-unpause", address(0x2), "https://e.com", "ipfs://m");
+        registry.registerAgent("after-unpause", address(0x2), "https://e.com", "ipfs://m", "");
         registry.recordQuery("emergency");
         assertEq(registry.getAgent("emergency").totalQueries, 1);
+    }
+
+    // ═══════════════════════════════════════════════════════════════════════
+    //  NEW: REGRESSION TESTS (Phase 2 & ENS)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    function test_TransferOwnership_RemovesFromOldOwner() public {
+        vm.prank(alice);
+        registry.registerAgent("move-me", address(0x1), "https://e.com", "ipfs://m", "");
+        assertEq(registry.getOwnerAgentCount(alice), 1);
+
+        vm.prank(alice);
+        registry.transferAgentOwnership("move-me", bob);
+
+        assertEq(registry.getOwnerAgentCount(alice), 0, "Alice should have 0 agents left");
+        assertEq(registry.getOwnerAgentCount(bob), 1, "Bob should have 1 agent");
+        
+        string[] memory aliceAgents = registry.getOwnerAgents(alice);
+        assertEq(aliceAgents.length, 0);
+    }
+
+    function test_Revert_NameValidation_IllegalChars() public {
+        vm.startPrank(alice);
+        
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.InvalidName.selector, "invalid character"));
+        registry.registerAgent("Name_With_Underscore", address(0x1), "https://e.com", "ipfs://m", "");
+
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.InvalidName.selector, "invalid character"));
+        registry.registerAgent("Name With Space", address(0x1), "https://e.com", "ipfs://m", "");
+
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.InvalidName.selector, "invalid character"));
+        registry.registerAgent("name.eth", address(0x1), "https://e.com", "ipfs://m", "");
+
+        vm.stopPrank();
+    }
+
+    function test_Revert_NameValidation_LeadingTrailingHyphen() public {
+        vm.startPrank(alice);
+        
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.InvalidName.selector, "cannot start/end with hyphen"));
+        registry.registerAgent("-leading", address(0x1), "https://e.com", "ipfs://m", "");
+
+        vm.expectRevert(abi.encodeWithSelector(AgentRegistry.InvalidName.selector, "cannot start/end with hyphen"));
+        registry.registerAgent("trailing-", address(0x1), "https://e.com", "ipfs://m", "");
+
+        vm.stopPrank();
+    }
+
+    function test_RegisterWithEnsName() public {
+        vm.prank(alice);
+        registry.registerAgent(
+            "ens-bot",
+            address(0x1),
+            "https://e.com",
+            "ipfs://m",
+            "satoshi.base.eth"
+        );
+
+        AgentRegistry.Agent memory agent = registry.getAgent("ens-bot");
+        assertEq(agent.ensName, "satoshi.base.eth");
     }
 }
