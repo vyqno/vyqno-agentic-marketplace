@@ -36,6 +36,17 @@ Thumbs.db
 *.log
 *.tsbuildinfo
 
+# Lockfile (project uses pnpm — ignore npm's lockfile)
+package-lock.json
+
+# Temp / scratch scripts
+update_schema.js
+_tmp_*
+
+# Dump / junk files
+*.txt
+2026-*
+
 # Project docs (not needed in repo)
 .agent/
 .codex/
@@ -43,3 +54,4 @@ instructions.md
 QUICKREF.md
 observer-log/
 ultimate-pitch.md
+docs/
