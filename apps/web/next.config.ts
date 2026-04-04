@@ -19,14 +19,19 @@ const nextConfig: NextConfig = {
     "viem",
   ],
   webpack: (config, { isServer }) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      "pino-pretty": false,
+    };
     if (isServer) {
-        config.resolve.alias = {
-            ...config.resolve.alias,
-            "@solana/kit": false,
-            "@solana-program/token": false,
-            "@solana-program/system": false,
-            "@solana-program/compute-budget": false,
-        };
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        "pino-pretty": false,
+        "@solana/kit": false,
+        "@solana-program/token": false,
+        "@solana-program/system": false,
+        "@solana-program/compute-budget": false,
+      };
     }
     return config;
   },
