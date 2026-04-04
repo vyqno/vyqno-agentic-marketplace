@@ -4,6 +4,7 @@ import { runAgentQuery } from "@/lib/rag";
 import { settlePayment, facilitator } from "thirdweb/x402";
 import { getThirdwebServerClient } from "@/lib/thirdwebServerClient";
 import { baseSepolia } from "thirdweb/chains";
+import { verifyApiKey, getUserCredits, deductCredits } from "@/lib/api-keys";
 
 export const dynamic = "force-dynamic";
 
@@ -44,39 +45,60 @@ export async function POST(
       return NextResponse.json({ error: "Agent is not active" }, { status: 403 });
     }
 
-    // ── x402 Payment Gate ────────────────────────────────────────────────────
-    if (!agent.is_free) {
-      const paymentData =
-        request.headers.get("X-PAYMENT") ||
-        request.headers.get("PAYMENT-SIGNATURE");
-
-      const payTo = (agent.wallet_address || process.env.PLATFORM_WALLET_ADDRESS) as `0x${string}`;
-      const price = `$${Number(agent.price_usdc).toFixed(4)}`;
-      const resourceUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/agents/${name}/ask`;
-
-      const result = await settlePayment({
-        resourceUrl,
-        method: "POST",
-        paymentData,
-        payTo,
-        network: baseSepolia,
-        price,
-        facilitator: getThirdwebFacilitator(),
-        routeConfig: {
-          description: `Query agent: ${agent.name}`,
-          mimeType: "application/json",
-        },
-      });
-
-      if (result.status !== 200) {
-        // 402 Payment Required — client's useFetchWithPayment handles this automatically
-        return NextResponse.json(result.responseBody, {
-          status: result.status,
-          headers: result.responseHeaders as Record<string, string>,
-        });
+    // ── API Key Credit Gate (MCP / external integrations) ────────────────────
+    const apiKey = request.headers.get("X-AgentNet-Key");
+    if (apiKey) {
+      const user = await verifyApiKey(apiKey);
+      if (!user) {
+        return NextResponse.json({ error: "Invalid API key" }, { status: 401 });
       }
+      if (!agent.is_free) {
+        const price = Number(agent.price_usdc);
+        const credits = await getUserCredits(user.walletAddress);
+        if (credits < price) {
+          return NextResponse.json(
+            {
+              error: `Insufficient credits. Need ${price} USDC, have ${credits.toFixed(4)}. Top up at agentnet.xyz/profile`,
+            },
+            { status: 402 }
+          );
+        }
+        await deductCredits(user.walletAddress, price);
+      }
+    } else {
+      // ── x402 Payment Gate (existing web flow) ──────────────────────────────
+      if (!agent.is_free) {
+        const paymentData =
+          request.headers.get("X-PAYMENT") ||
+          request.headers.get("PAYMENT-SIGNATURE");
+
+        const payTo = (agent.wallet_address || process.env.PLATFORM_WALLET_ADDRESS) as `0x${string}`;
+        const price = `$${Number(agent.price_usdc).toFixed(4)}`;
+        const resourceUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/agents/${name}/ask`;
+
+        const result = await settlePayment({
+          resourceUrl,
+          method: "POST",
+          paymentData,
+          payTo,
+          network: baseSepolia,
+          price,
+          facilitator: getThirdwebFacilitator(),
+          routeConfig: {
+            description: `Query agent: ${agent.name}`,
+            mimeType: "application/json",
+          },
+        });
+
+        if (result.status !== 200) {
+          return NextResponse.json(result.responseBody, {
+            status: result.status,
+            headers: result.responseHeaders as Record<string, string>,
+          });
+        }
+      }
+      // ── End x402 Gate ───────────────────────────────────────────────────────
     }
-    // ── End Payment Gate ─────────────────────────────────────────────────────
 
     const answer = await runAgentQuery(
       agent.id,
@@ -85,7 +107,6 @@ export async function POST(
       body.question.trim()
     );
 
-    // Fire-and-forget — don't block the response on this
     supabase.rpc("increment_query_count", { agent_name: name }).then(({ error: e }) => {
       if (e) console.error("[ask] increment_query_count failed:", e);
     });

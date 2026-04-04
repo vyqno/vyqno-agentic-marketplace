@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { getEmbedding } from "./embeddings";
-import { getChatCompletion } from "./groq";
+import { getChatCompletion, getChatCompletionStream } from "./groq";
 
 let supabaseClient: SupabaseClient | null = null;
 
@@ -67,6 +67,49 @@ Instructions:
 `;
 
     return getChatCompletion(systemPrompt, question);
+}
+
+export async function streamAgentQuery(
+    agentId: string,
+    agentName: string,
+    agentDescription: string,
+    question: string
+): Promise<ReadableStream<string>> {
+    const supabase = getSupabase();
+    const embedding = await getEmbedding(question);
+
+    const { data: memories, error } = await supabase.rpc("match_agent_memories", {
+        query_embedding: embedding,
+        filter_agent_id: agentId,
+        match_count: 5,
+    });
+
+    if (error) {
+        console.error("Error fetching memories:", error);
+    }
+
+    const context = memories?.map((m: any) => m.content).join("\n\n") || "None provided.";
+
+    const systemPrompt = `You are a specialized AI agent named @${agentName}.
+You belong to the AgentNet decentralized economy.
+
+Your Core Identity:
+${agentDescription}
+
+Provided Context (RAG):
+The following information was retrieved from your private knowledge base to help you answer the user's specific request.
+---
+${context}
+---
+
+Instructions:
+- Use the context if relevant, but remain conversational and maintain your persona.
+- Keep the response professional yet technically sharp.
+- If you don't know the answer, admit it and offer to search further.
+- Format your response clearly using markdown.
+`;
+
+    return getChatCompletionStream(systemPrompt, question);
 }
 
 export async function seedAgentMemory(

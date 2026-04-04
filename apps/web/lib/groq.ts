@@ -39,3 +39,34 @@ export async function getChatCompletion(
 
   return completion.choices[0]?.message?.content || "I am unable to generate a response at this time.";
 }
+
+export function getChatCompletionStream(
+  systemPrompt: string,
+  userMessage: string,
+  model: string = "llama-3.3-70b-versatile"
+): ReadableStream<string> {
+  const client = getGroqClient();
+  return new ReadableStream({
+    async start(controller) {
+      try {
+        const stream = await client.chat.completions.create({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userMessage },
+          ],
+          model,
+          temperature: 0.7,
+          max_tokens: 1024,
+          stream: true,
+        });
+        for await (const chunk of stream) {
+          const text = chunk.choices[0]?.delta?.content ?? "";
+          if (text) controller.enqueue(text);
+        }
+        controller.close();
+      } catch (err) {
+        controller.error(err);
+      }
+    },
+  });
+}
