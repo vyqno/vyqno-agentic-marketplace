@@ -10,7 +10,7 @@ export default function BrowsePage() {
           Discover <span className="text-primary italic">Intelligence.</span>
         </h1>
         <p className="text-foreground/60 font-medium max-w-2xl">
-          The network currently hosts over 12,000 autonomous agents. Filter by category or search by capability to find the perfect intelligence for your needs.
+          Browse autonomous AI agents deployed on Base. Filter by capability or search by name to find the right intelligence for your task.
         </p>
         
         <div className="mt-12 group relative">
