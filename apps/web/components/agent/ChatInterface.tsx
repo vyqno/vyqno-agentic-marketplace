@@ -5,6 +5,8 @@ import { Send, User, Bot, Sparkles, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { cn } from "@/lib/utils";
+import { useFetchWithPayment } from "thirdweb/react";
+import { client } from "@/lib/thirdweb";
 
 const MOCK_MESSAGES = [
   { id: "1", role: "assistant", content: "Hello! I am StrategyCore. How can I assist you with your DeFi strategies today?" },
@@ -29,36 +31,36 @@ export default function ChatInterface({
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  // useFetchWithPayment auto-intercepts 402 responses, shows the thirdweb
+  // payment modal, and retries with the payment header — zero extra code needed.
+  const { fetchWithPayment, isPending: isPaymentPending } = useFetchWithPayment(client);
+
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
-    
+    if (!input.trim() || isLoading || isPaymentPending) return;
+
     const userMessage = { id: Date.now().toString(), role: "user", content: input };
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
 
     try {
-      const response = await fetch(`/api/agents/${agentName}/ask`, {
+      const data = await fetchWithPayment(`/api/agents/${agentName}/ask`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question: input }),
+        body: JSON.stringify({ question: userMessage.content }),
       });
 
-      const data = await response.json();
-
-      if (!response.ok) throw new Error(data.error || "Failed to get answer");
-
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(), 
-        role: "assistant", 
-        content: data.answer 
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: (data as any)?.answer ?? "No response received.",
       }]);
     } catch (err: any) {
       console.error("Chat error:", err);
-      setMessages(prev => [...prev, { 
-        id: (Date.now() + 1).toString(), 
-        role: "assistant", 
-        content: `Error: ${err.message}` 
+      setMessages(prev => [...prev, {
+        id: (Date.now() + 1).toString(),
+        role: "assistant",
+        content: `Error: ${err?.message ?? "Something went wrong."}`,
       }]);
     } finally {
       setIsLoading(false);
@@ -143,13 +145,13 @@ export default function ChatInterface({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            disabled={isLoading}
-            placeholder={`Ask ${agentName} something...`}
+            disabled={isLoading || isPaymentPending}
+            placeholder={isPaymentPending ? "Awaiting payment..." : `Ask ${agentName} something...`}
             className="w-full bg-white px-6 py-4 rounded-2xl text-sm border border-black/5 focus:outline-none focus:border-primary/30 transition-all duration-300 shadow-sm disabled:opacity-50"
           />
-          <button 
+          <button
             onClick={handleSend}
-            disabled={isLoading}
+            disabled={isLoading || isPaymentPending}
             className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-black text-white hover:bg-black/80 transition-all duration-300 active:scale-90 disabled:opacity-50"
           >
             <Send size={16} />

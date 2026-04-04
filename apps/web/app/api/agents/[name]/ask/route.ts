@@ -1,11 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase";
 import { runAgentQuery } from "@/lib/rag";
+import { settlePayment, facilitator } from "thirdweb/x402";
+import { getThirdwebServerClient } from "@/lib/thirdwebServerClient";
+import { baseSepolia } from "thirdweb/chains";
 
 export const dynamic = "force-dynamic";
 
-function parseJsonBody(request: NextRequest): Promise<Record<string, unknown> | null> {
-  return request.json().catch(() => null) as Promise<Record<string, unknown> | null>;
+function getThirdwebFacilitator() {
+  return facilitator({
+    client: getThirdwebServerClient(),
+    serverWalletAddress: process.env.PLATFORM_WALLET_ADDRESS as `0x${string}`,
+  });
 }
 
 export async function POST(
@@ -14,22 +20,10 @@ export async function POST(
 ) {
   try {
     const { name } = await params;
-    const body = await parseJsonBody(request);
+    const body = await request.json().catch(() => null);
 
-    if (!body) {
-      return NextResponse.json(
-        { error: "Invalid JSON body" },
-        { status: 400 }
-      );
-    }
-
-    const { question } = body;
-
-    if (typeof question !== "string" || question.trim().length === 0) {
-      return NextResponse.json(
-        { error: "Question is required" },
-        { status: 400 }
-      );
+    if (!body || typeof body.question !== "string" || !body.question.trim()) {
+      return NextResponse.json({ error: "question is required" }, { status: 400 });
     }
 
     const supabase = createServiceRoleClient();
@@ -40,69 +34,69 @@ export async function POST(
       .maybeSingle();
 
     if (error) {
-      console.error("[POST /api/agents/[name]/ask] Agent lookup failed:", error);
-      return NextResponse.json(
-        { error: "Failed to load agent" },
-        { status: 500 }
-      );
+      console.error("[ask] Agent lookup error:", error);
+      return NextResponse.json({ error: "Failed to load agent" }, { status: 500 });
     }
-
     if (!agent) {
-      return NextResponse.json(
-        { error: `Agent "${name}" not found` },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: `Agent "${name}" not found` }, { status: 404 });
     }
-
     if (agent.status !== "active") {
-      return NextResponse.json(
-        { error: `Agent "${name}" is not active` },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Agent is not active" }, { status: 403 });
     }
 
-    const trimmedQuestion = question.trim();
+    // ── x402 Payment Gate ────────────────────────────────────────────────────
+    if (!agent.is_free) {
+      const paymentData =
+        request.headers.get("X-PAYMENT") ||
+        request.headers.get("PAYMENT-SIGNATURE");
+
+      const payTo = (agent.wallet_address || process.env.PLATFORM_WALLET_ADDRESS) as `0x${string}`;
+      const price = `$${Number(agent.price_usdc).toFixed(4)}`;
+      const resourceUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/agents/${name}/ask`;
+
+      const result = await settlePayment({
+        resourceUrl,
+        method: "POST",
+        paymentData,
+        payTo,
+        network: baseSepolia,
+        price,
+        facilitator: getThirdwebFacilitator(),
+        routeConfig: {
+          description: `Query agent: ${agent.name}`,
+          mimeType: "application/json",
+        },
+      });
+
+      if (result.status !== 200) {
+        // 402 Payment Required — client's useFetchWithPayment handles this automatically
+        return NextResponse.json(result.responseBody, {
+          status: result.status,
+          headers: result.responseHeaders as Record<string, string>,
+        });
+      }
+    }
+    // ── End Payment Gate ─────────────────────────────────────────────────────
+
     const answer = await runAgentQuery(
       agent.id,
       agent.name,
       agent.description,
-      trimmedQuestion
+      body.question.trim()
     );
 
-    const { error: incrementError } = await supabase.rpc("increment_query_count", {
-      agent_name: name,
+    // Fire-and-forget — don't block the response on this
+    supabase.rpc("increment_query_count", { agent_name: name }).then(({ error: e }) => {
+      if (e) console.error("[ask] increment_query_count failed:", e);
     });
-
-    if (incrementError) {
-      console.error(
-        "[POST /api/agents/[name]/ask] Failed to increment query count:",
-        incrementError
-      );
-    }
-
-    const { data: updated, error: updatedError } = await supabase
-      .from("agents")
-      .select("query_count")
-      .eq("name", name)
-      .maybeSingle();
-
-    if (updatedError) {
-      console.error(
-        "[POST /api/agents/[name]/ask] Failed to read updated count:",
-        updatedError
-      );
-    }
 
     return NextResponse.json({
       answer,
       agentName: agent.name,
-      queryCount: updated?.query_count ?? agent.query_count + 1,
+      queryCount: (agent.query_count ?? 0) + 1,
     });
   } catch (err) {
-    console.error("[POST /api/agents/[name]/ask] Error:", err);
-    return NextResponse.json(
-      { error: "Failed to process query" },
-      { status: 500 }
-    );
+    console.error("[ask] Unexpected error:", err);
+    return NextResponse.json({ error: "Failed to process query" }, { status: 500 });
   }
 }
