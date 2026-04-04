@@ -1,0 +1,21 @@
+{
+  "name": "agentnet-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "test": "turbo run test",
+    "lint": "turbo run lint",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "turbo": "latest",
+    "typescript": "^5"
+  },
+  "packageManager": "pnpm@10.26.0"
+}
