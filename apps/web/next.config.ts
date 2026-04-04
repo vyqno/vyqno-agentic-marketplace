@@ -15,8 +15,6 @@ const nextConfig: NextConfig = {
   serverExternalPackages: [
     "@huggingface/transformers",
     "onnxruntime-node",
-    "@coinbase/agentkit",
-    "@coinbase/cdp-sdk",
     "@noble/hashes",
     "viem",
   ],
