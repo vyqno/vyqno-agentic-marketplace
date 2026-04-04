@@ -23,11 +23,12 @@ export default async function AgentPage({ params }: { params: Promise<{ id: stri
     handle: agent.ens_name ? `@${agent.ens_name}` : `@${agent.name}.agent`,
     description: agent.description,
     status: agent.status === "active" ? "Active" : "Inactive",
-    price: `${agent.price_usdc} USDC / query`,
     image: agent.image_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${agent.name}`,
     walletAddress: agent.wallet_address,
     isFree: agent.is_free,
     priceUsdc: agent.price_usdc,
+    queryCount: agent.query_count ?? 0,
+    skillTags: agent.skill_tags ?? [],
   };
 
   return (

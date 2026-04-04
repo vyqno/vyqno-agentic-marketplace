@@ -4,8 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Bot, MessageSquare, TrendingUp, Zap } from "lucide-react";
-import Image from "next/image";
+import { MessageSquare } from "lucide-react";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -62,11 +61,19 @@ export default function AgentGrid() {
           </p>
         </div>
         
-        <div className="flex items-center gap-3">
-          <Badge variant="glass" className="py-2 px-4 cursor-pointer hover:bg-black/5 transition-colors">All</Badge>
-          <Badge variant="glass" className="py-2 px-4 cursor-pointer hover:bg-black/5 transition-colors">DeFi</Badge>
-          <Badge variant="glass" className="py-2 px-4 cursor-pointer hover:bg-black/5 transition-colors">Writing</Badge>
-          <Badge variant="glass" className="py-2 px-4 cursor-pointer hover:bg-black/5 transition-colors">Security</Badge>
+        <div className="flex items-center gap-3 flex-wrap">
+          {["All", "DeFi", "Security", "Blockchain", "Research"].map((tag) => (
+            <Badge
+              key={tag}
+              variant="glass"
+              className={`py-2 px-4 cursor-pointer transition-colors ${
+                filter === tag ? "bg-primary/10 border-primary/30 text-primary" : "hover:bg-black/5"
+              }`}
+              onClick={() => setFilter(tag)}
+            >
+              {tag}
+            </Badge>
+          ))}
         </div>
       </div>
 
@@ -110,21 +117,21 @@ export default function AgentGrid() {
               </CardHeader>
               
               <CardContent className="px-8 pb-4">
-                <div className="grid grid-cols-2 gap-4 py-4 border-y border-black/5">
-                  <div className="flex flex-col gap-1">
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Efficiency</span>
-                    <div className="flex items-center gap-1.5 text-primary">
-                      <TrendingUp className="w-3.5 h-3.5" />
-                      <span className="font-mono font-bold text-sm tracking-tight">{agent.efficiency || "98.5%"}</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-1">
+                <div className="py-4 border-y border-black/5 flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
                     <span className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Queries</span>
                     <div className="flex items-center gap-1.5 text-foreground/70">
                       <MessageSquare className="w-3.5 h-3.5" />
-                      <span className="font-mono font-bold text-sm tracking-tight">{agent.query_count || 0}</span>
+                      <span className="font-mono font-bold text-sm tracking-tight">{(agent.query_count ?? 0).toLocaleString()}</span>
                     </div>
                   </div>
+                  {agent.skill_tags?.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5">
+                      {agent.skill_tags.slice(0, 3).map((tag: string) => (
+                        <Badge key={tag} variant="glass" className="text-[10px] py-0.5 px-2">{tag}</Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </CardContent>
               
@@ -147,15 +154,17 @@ export default function AgentGrid() {
         ))}
       </div>
 
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0 }}
         whileInView={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
         className="mt-20 text-center"
       >
-        <Button variant="outline" size="lg" className="px-10">
-          Load More Agents
-        </Button>
+        <Link href="/browse">
+          <Button variant="outline" size="lg" className="px-10">
+            Browse All Agents
+          </Button>
+        </Link>
       </motion.div>
     </section>
   );

@@ -2,85 +2,112 @@
 
 import { Badge } from "@/components/ui/Badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/Card";
-import { Brain, Cpu, Database, Globe, ShieldCheck, Zap } from "lucide-react";
+import { Brain, Database, ExternalLink, MessageSquare, Wallet } from "lucide-react";
 
 export default function AgentProfileDetails({ agent }: { agent: any }) {
+  const tags: string[] = agent.skillTags ?? agent.skill_tags ?? [];
+  const queryCount: number = agent.queryCount ?? agent.query_count ?? 0;
+  const walletAddress: string = agent.walletAddress ?? agent.wallet_address ?? "";
+  const shortWallet = walletAddress
+    ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}`
+    : "—";
+
   return (
     <div className="flex flex-col gap-8">
       {/* Identity Card */}
       <Card className="shadow-premium border-black/5">
-        <CardHeader className="pt-10 px-8 pb-10">
+        <CardHeader className="pt-10 px-8 pb-6">
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 rounded-3xl overflow-hidden border border-black/5 shadow-inner">
+            <div className="w-20 h-20 rounded-2xl overflow-hidden border border-black/5 shadow-inner shrink-0">
               <img src={agent.image} alt={agent.name} className="w-full h-full object-cover" />
             </div>
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <CardTitle className="text-4xl">{agent.name}</CardTitle>
+            <div className="min-w-0">
+              <div className="flex items-center gap-3 mb-1 flex-wrap">
+                <CardTitle className="text-3xl truncate">{agent.name}</CardTitle>
                 <Badge variant="accent">{agent.status}</Badge>
               </div>
-              <CardDescription className="text-lg">{agent.handle}</CardDescription>
+              <CardDescription className="text-base">{agent.handle}</CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent className="px-8 pb-10">
-          <p className="text-foreground/70 text-lg leading-relaxed mb-8">
+        <CardContent className="px-8 pb-8 flex flex-col gap-6">
+          <p className="text-foreground/70 text-base leading-relaxed">
             {agent.description}
           </p>
-          
-          <div className="flex flex-wrap gap-2">
-            <Badge variant="glass"><Brain className="w-3.5 h-3.5 mr-1" /> Neural-Llama 3</Badge>
-            <Badge variant="glass"><Database className="w-3.5 h-3.5 mr-1" /> Vector-RAG</Badge>
-            <Badge variant="glass"><Globe className="w-3.5 h-3.5 mr-1" /> Global Tools</Badge>
-            <Badge variant="glass"><ShieldCheck className="w-3.5 h-3.5 mr-1" /> Audited</Badge>
+
+          {/* Skill tags from DB */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag: string) => (
+                <Badge key={tag} variant="glass">{tag}</Badge>
+              ))}
+            </div>
+          )}
+
+          {/* Always-true capability badges */}
+          <div className="flex flex-wrap gap-2 pt-1 border-t border-black/5">
+            <Badge variant="glass"><Brain className="w-3 h-3 mr-1" /> Llama 3.3-70b</Badge>
+            <Badge variant="glass"><Database className="w-3 h-3 mr-1" /> pgvector RAG</Badge>
           </div>
         </CardContent>
       </Card>
 
-      {/* Stats Grid */}
+      {/* Real stats */}
       <div className="grid grid-cols-2 gap-4">
         <Card className="p-6 border-black/5">
-          <span className="text-[11px] uppercase font-bold tracking-widest text-foreground/40 block mb-2">Success Rate</span>
+          <span className="text-[11px] uppercase font-bold tracking-widest text-foreground/40 block mb-2">
+            Total Queries
+          </span>
           <div className="flex items-end gap-2">
-            <span className="text-3xl font-black font-outfit">99.2%</span>
-            <span className="text-xs font-bold text-green-500 mb-1">+0.4%</span>
+            <span className="text-3xl font-black font-outfit">{queryCount.toLocaleString()}</span>
+            <MessageSquare className="w-4 h-4 text-foreground/30 mb-1" />
           </div>
         </Card>
         <Card className="p-6 border-black/5">
-          <span className="text-[11px] uppercase font-bold tracking-widest text-foreground/40 block mb-2">Total Queries</span>
+          <span className="text-[11px] uppercase font-bold tracking-widest text-foreground/40 block mb-2">
+            Price per Query
+          </span>
           <div className="flex items-end gap-2">
-            <span className="text-3xl font-black font-outfit">12.4k</span>
-            <span className="text-xs font-bold text-foreground/30 mb-1">ALL TIME</span>
+            <span className="text-3xl font-black font-outfit">
+              {agent.isFree ? "FREE" : `$${Number(agent.priceUsdc ?? 0).toFixed(4)}`}
+            </span>
           </div>
         </Card>
       </div>
 
-      {/* Capabilities */}
-      <Card className="border-black/5">
-        <CardHeader>
-          <CardTitle className="text-xl">Capabilities</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 gap-4">
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50">
-            <Cpu className="w-5 h-5 text-primary mt-1" />
-            <div>
-              <h4 className="font-bold text-sm">Autonomous Execution</h4>
-              <p className="text-xs text-foreground/60 leading-relaxed">
-                Can execute transactions and interact with external protocols without human intervention.
-              </p>
+      {/* On-chain identity */}
+      {walletAddress && (
+        <Card className="border-black/5">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Wallet className="w-4 h-4 text-primary" />
+              On-chain Identity
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground/40 uppercase font-bold tracking-widest">Agent Wallet</span>
+              <a
+                href={`https://sepolia.basescan.org/address/${walletAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1.5 text-sm font-mono text-primary hover:underline"
+              >
+                {shortWallet}
+                <ExternalLink className="w-3 h-3" />
+              </a>
             </div>
-          </div>
-          <div className="flex items-start gap-4 p-4 rounded-xl bg-muted/50">
-            <Zap className="w-5 h-5 text-primary mt-1" />
-            <div>
-              <h4 className="font-bold text-sm">Real-time Analysis</h4>
-              <p className="text-xs text-foreground/60 leading-relaxed">
-                Processes data streams in real-time with sub-100ms latency.
-              </p>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground/40 uppercase font-bold tracking-widest">Network</span>
+              <span className="text-sm font-semibold text-foreground/70">Base Sepolia</span>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-foreground/40 uppercase font-bold tracking-widest">Payment</span>
+              <span className="text-sm font-semibold text-foreground/70">USDC via x402</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
