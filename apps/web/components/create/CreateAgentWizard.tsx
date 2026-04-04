@@ -3,9 +3,14 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { useActiveAccount } from "thirdweb/react";
+import { ConnectButton } from "thirdweb/react";
+import { client } from "@/lib/thirdweb";
+import { baseSepolia } from "thirdweb/chains";
+import { inAppWallet, createWallet } from "thirdweb/wallets";
 import { Button } from "@/components/ui/Button";
 import { Card, CardContent } from "@/components/ui/Card";
-import { Brain, Cpu, Database, Fingerprint, Rocket, ArrowRight, ArrowLeft, Loader2, Globe } from "lucide-react";
+import { Brain, Cpu, Database, Fingerprint, Rocket, ArrowRight, ArrowLeft, Loader2, Globe, Plus, X, Upload, FileText, Wallet } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 
 const STEPS = [
@@ -15,12 +20,63 @@ const STEPS = [
   { id: "launch", title: "Launch", description: "Deploy to AgentNet", icon: Rocket },
 ];
 
+function WalletGate() {
+  const wallets = [
+    inAppWallet({
+      auth: { options: ["google", "email", "apple"] },
+      smartAccount: { chain: baseSepolia, sponsorGas: true },
+    }),
+    createWallet("io.metamask"),
+    createWallet("com.coinbase.wallet"),
+  ];
+
+  return (
+    <div className="pt-32 pb-20 px-6 max-w-3xl mx-auto flex flex-col items-center justify-center min-h-[60vh] gap-8 text-center">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="flex flex-col items-center gap-6"
+      >
+        <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+          <Wallet size={32} />
+        </div>
+        <div>
+          <h2 className="font-outfit font-black text-3xl tracking-tight text-foreground mb-3">
+            Connect to Deploy
+          </h2>
+          <p className="text-foreground/50 font-medium max-w-sm">
+            Your wallet is your identity on AgentNet. Connect once — we'll create your account automatically and link any agents you deploy to your address.
+          </p>
+        </div>
+        <ConnectButton
+          client={client}
+          chain={baseSepolia}
+          wallets={wallets}
+          theme="light"
+          connectButton={{
+            label: "Connect Wallet",
+            className: "!rounded-full !px-8 !py-3 !h-auto !text-sm !font-bold",
+          }}
+          accountAbstraction={{ chain: baseSepolia, sponsorGas: true }}
+        />
+        <p className="text-xs text-foreground/30">
+          Supports Google, email, MetaMask, and Coinbase Wallet
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
 export default function CreateAgentWizard() {
   const router = useRouter();
+  const account = useActiveAccount();
   const [currentStep, setCurrentStep] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+  const [tagInput, setTagInput] = useState("");
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -43,6 +99,28 @@ export default function CreateAgentWizard() {
     setFormData(prev => ({ ...prev, isInitiallyFree: !prev.isInitiallyFree }));
   };
 
+  const addTag = () => {
+    const t = tagInput.trim();
+    if (t && !formData.skillTags.includes(t)) {
+      setFormData(prev => ({ ...prev, skillTags: [...prev.skillTags, t] }));
+    }
+    setTagInput("");
+  };
+
+  const removeTag = (tag: string) => {
+    setFormData(prev => ({ ...prev, skillTags: prev.skillTags.filter(t => t !== tag) }));
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.name.endsWith(".md")) { setError("Only .md files accepted"); return; }
+    if (file.size > 10 * 1024 * 1024) { setError("File must be under 10 MB"); return; }
+    setError(null);
+    setUploadedFile(file);
+    file.text().then(text => setFormData(prev => ({ ...prev, initialMemory: text })));
+  };
+
   const handleSubmit = async () => {
     setIsSubmitting(true);
     setError(null);
@@ -51,7 +129,7 @@ export default function CreateAgentWizard() {
       const response = await fetch("/api/agents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({ ...formData, ownerWallet: account?.address ?? null }),
       });
 
       const result = await response.json();
@@ -66,6 +144,8 @@ export default function CreateAgentWizard() {
       setIsSubmitting(false);
     }
   };
+
+  if (!account) return <WalletGate />;
 
   return (
     <div className="pt-32 pb-20 px-6 max-w-3xl mx-auto">
@@ -149,7 +229,7 @@ export default function CreateAgentWizard() {
                     </div>
                     <div className="flex flex-col gap-2">
                       <label className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Bio / Description</label>
-                      <textarea 
+                      <textarea
                         name="description"
                         value={formData.description}
                         onChange={handleChange}
@@ -157,6 +237,31 @@ export default function CreateAgentWizard() {
                         rows={3}
                         className="bg-white/50 border border-black/5 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-primary/30 transition-all font-medium resize-none"
                       />
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Skill Tags</label>
+                      <div className="flex flex-wrap gap-1.5 min-h-[28px]">
+                        {formData.skillTags.map(tag => (
+                          <span key={tag} className="inline-flex items-center gap-1 text-xs bg-primary/10 text-primary px-2.5 py-1 rounded-full font-medium">
+                            {tag}
+                            <button type="button" onClick={() => removeTag(tag)}><X className="w-3 h-3" /></button>
+                          </span>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          value={tagInput}
+                          onChange={e => setTagInput(e.target.value)}
+                          onKeyDown={e => e.key === "Enter" && (e.preventDefault(), addTag())}
+                          placeholder="DeFi, Security, Research…"
+                          className="flex-1 bg-white/50 border border-black/5 px-4 py-2.5 rounded-xl text-sm focus:outline-none focus:border-primary/30 transition-all font-medium"
+                        />
+                        <Button type="button" variant="outline" size="sm" onClick={addTag} className="shrink-0">
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      <p className="text-[10px] text-foreground/40">Press Enter or click + to add. These help users discover your agent.</p>
                     </div>
                   </div>
                 </div>
@@ -234,17 +339,52 @@ export default function CreateAgentWizard() {
                   </div>
 
                   <div className="flex flex-col gap-4">
-                    <label className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Initial Context / Memory</label>
-                    <textarea 
+                    {/* File Upload */}
+                    <div className="flex flex-col gap-2">
+                      <label className="text-[10px] uppercase font-bold tracking-widest text-foreground/40">Upload .md Document (max 10 MB)</label>
+                      <label className={`flex items-center gap-4 p-5 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${uploadedFile ? "border-primary/30 bg-primary/5" : "border-black/10 hover:border-primary/20 hover:bg-black/[0.02]"}`}>
+                        <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                          {uploadedFile ? <FileText size={20} /> : <Upload size={20} />}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          {uploadedFile ? (
+                            <>
+                              <p className="text-sm font-bold text-foreground truncate">{uploadedFile.name}</p>
+                              <p className="text-[11px] text-foreground/40">{(uploadedFile.size / 1024).toFixed(1)} KB — will be chunked and indexed</p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="text-sm font-medium text-foreground/60">Drop a Markdown file here</p>
+                              <p className="text-[11px] text-foreground/40">Documentation, notes, research — anything your agent should know</p>
+                            </>
+                          )}
+                        </div>
+                        {uploadedFile && (
+                          <button type="button" onClick={(e) => { e.preventDefault(); setUploadedFile(null); setFormData(prev => ({ ...prev, initialMemory: "" })); }} className="text-foreground/30 hover:text-foreground/60 shrink-0">
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                        <input type="file" accept=".md" className="hidden" onChange={handleFileSelect} />
+                      </label>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-foreground/30">
+                      <div className="flex-1 h-px bg-black/5" />
+                      <span className="text-[10px] uppercase font-bold tracking-widest">or paste text</span>
+                      <div className="flex-1 h-px bg-black/5" />
+                    </div>
+
+                    <textarea
                       name="initialMemory"
-                      value={formData.initialMemory}
+                      value={uploadedFile ? "" : formData.initialMemory}
                       onChange={handleChange}
-                      placeholder="Paste text or data your agent should know... This will be chunked and indexed in Supabase pgvector."
-                      rows={8}
-                      className="bg-white/50 border border-black/5 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-primary/30 transition-all font-medium resize-none shadow-inner"
+                      disabled={!!uploadedFile}
+                      placeholder="Paste text or data your agent should know… This will be chunked and indexed in Supabase pgvector."
+                      rows={6}
+                      className="bg-white/50 border border-black/5 px-4 py-3 rounded-xl text-sm focus:outline-none focus:border-primary/30 transition-all font-medium resize-none shadow-inner disabled:opacity-40 disabled:cursor-not-allowed"
                     />
                     <p className="text-[11px] text-foreground/40">
-                      RAG (Retrieval Augmented Generation) allows your agent to perform search over private data in real-time.
+                      RAG allows your agent to retrieve private knowledge in real-time to answer queries accurately.
                     </p>
                   </div>
                 </div>
