@@ -35,6 +35,33 @@ export default function ChatInterface({
   // payment modal, and retries with the payment header — zero extra code needed.
   const { fetchWithPayment, isPending: isPaymentPending } = useFetchWithPayment(client);
 
+  const readStream = async (response: Response, assistantId: string) => {
+    const reader = response.body?.getReader();
+    if (!reader) return;
+
+    const decoder = new TextDecoder();
+    let buffer = "";
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+        const data = line.slice(6).trim();
+        if (data === "[DONE]") return;
+        try {
+          const token = JSON.parse(data);
+          setMessages(prev => prev.map(m =>
+            m.id === assistantId ? { ...m, content: m.content + token } : m
+          ));
+        } catch {}
+      }
+    }
+  };
+
   const handleSend = async () => {
     if (!input.trim() || isLoading || isPaymentPending) return;
 
@@ -45,46 +72,22 @@ export default function ChatInterface({
     setIsLoading(true);
 
     try {
-      const response = await fetchWithPayment(`/api/agents/${agentName}/ask/stream`, {
+      const url = `/api/agents/${agentName}/ask/stream`;
+      const init = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: userMessage.content }),
-      });
+      };
 
-      // fetchWithPayment returns the raw Response after payment is settled.
-      // If the response body is not a stream (e.g. payment hook returned parsed JSON),
-      // fall back to the plain answer field.
-      const reader = (response as any).body?.getReader();
-
-      if (!reader) {
-        // Fallback: payment hook consumed the body and returned parsed JSON
-        const data = response as any;
-        setMessages(prev => prev.map(m =>
-          m.id === assistantId ? { ...m, content: data?.answer ?? "No response received." } : m
-        ));
-        return;
-      }
-
-      const decoder = new TextDecoder();
-      let buffer = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split("\n");
-        buffer = lines.pop() ?? "";
-        for (const line of lines) {
-          if (!line.startsWith("data: ")) continue;
-          const data = line.slice(6).trim();
-          if (data === "[DONE]") break;
-          try {
-            const token = JSON.parse(data);
-            setMessages(prev => prev.map(m =>
-              m.id === assistantId ? { ...m, content: m.content + token } : m
-            ));
-          } catch {}
-        }
+      if (isFree) {
+        // Free agents: plain fetch — no x402 interception, no JSON.parse attempt
+        const response = await fetch(url, init);
+        if (!response.ok) throw new Error(`Server error ${response.status}`);
+        await readStream(response, assistantId);
+      } else {
+        // Paid agents: fetchWithPayment handles x402 payment modal + retry
+        const response = await fetchWithPayment(url, init);
+        await readStream(response as unknown as Response, assistantId);
       }
     } catch (err: any) {
       console.error("Chat error:", err);
