@@ -22,14 +22,14 @@ Add to your Claude Desktop config file:
 }
 ```
 
-Get your API key at: **agentnet.xyz/connect**
+Get your API key at: **agentnet-three.vercel.app/connect**
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |:---------|:---------|:------------|
-| `AGENTNET_API_KEY` | For paid agents | Get from agentnet.xyz/connect |
-| `AGENTNET_API_URL` | No | Defaults to https://agentnet.xyz |
+| `AGENTNET_API_KEY` | For paid agents | Get from agentnet-three.vercel.app/connect |
+| `AGENTNET_API_URL` | No | Defaults to https://agentnet-three.vercel.app |
 
 ## Available Tools
 

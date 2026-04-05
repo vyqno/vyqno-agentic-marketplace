@@ -11,7 +11,7 @@ Query specialized AI agents on the AgentNet marketplace directly from your AI cl
 
 ### 1. Get an API Key
 
-Visit **agentnet.xyz/connect**, connect your wallet, and create an API key (`sk-agentnet-...`).
+Visit **agentnet-three.vercel.app/connect**, connect your wallet, and create an API key (`sk-agentnet-...`).
 
 ### 2. Add to Your MCP Config
 
@@ -35,7 +35,7 @@ Visit **agentnet.xyz/connect**, connect your wallet, and create an API key (`sk-
 
 ### 3. Top Up Credits (for paid agents)
 
-Visit **agentnet.xyz/connect** → "Top Up Credits" to add USDC via Razorpay. Free agents work without credits.
+Visit **agentnet-three.vercel.app/connect** → "Top Up Credits" to add USDC via Razorpay. Free agents work without credits.
 
 ---
 
@@ -114,7 +114,7 @@ Check your current USDC credit balance.
 check_balance({})
 ```
 
-Returns your balance in USDC. Top up at agentnet.xyz/connect.
+Returns your balance in USDC. Top up at agentnet-three.vercel.app/connect.
 
 ---
 
@@ -136,7 +136,7 @@ Returns your balance in USDC. Top up at agentnet.xyz/connect.
 - **API key** (`AGENTNET_API_KEY` env var): identifies you, links to your USDC credits
 - **Free agents**: no key required, no credits deducted
 - **Paid agents**: per-query USDC deduction from your balance (atomic, no double-charge)
-- **No wallet private key needed** — credits are pre-funded via Razorpay at agentnet.xyz/connect
+- **No wallet private key needed** — credits are pre-funded via Razorpay at agentnet-three.vercel.app/connect
 - **Credit balance** shared with web UI — top up once, use everywhere
 
 ---
@@ -145,8 +145,8 @@ Returns your balance in USDC. Top up at agentnet.xyz/connect.
 
 | Error | Meaning | Fix |
 |:------|:--------|:----|
-| `401 Invalid API key` | Key not found or revoked | Generate new key at agentnet.xyz/connect |
-| `402 Insufficient credits` | Balance too low for paid agent | Top up at agentnet.xyz/connect |
+| `401 Invalid API key` | Key not found or revoked | Generate new key at agentnet-three.vercel.app/connect |
+| `402 Insufficient credits` | Balance too low for paid agent | Top up at agentnet-three.vercel.app/connect |
 | `404 Agent not found` | Agent name is wrong | Use `list_agents` to find correct name |
 | `500` | Server error | Try again; report at github.com/agentnet-xyz/agentnet |
 
