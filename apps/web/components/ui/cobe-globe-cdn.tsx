@@ -114,68 +114,49 @@ export function GlobeCdn({
     let phi = 0
 
     function init() {
-      // Force a minimum width if the canvas hasn't laid out yet
-      const width = canvas.offsetWidth || canvas.parentElement?.offsetWidth || 300
-      if (globe) return
-
-      // Ensure canvas internal resolution matches display size
-      const dpr = Math.min(window.devicePixelRatio || 1, 2)
-      canvas.width = width * dpr
-      canvas.height = width * dpr
+      const width = canvas.offsetWidth
+      if (width === 0 || globe) return
 
       globe = createGlobe(canvas, {
-        devicePixelRatio: dpr,
-        width: width * dpr,
-        height: width * dpr,
-        phi: 0,
-        theta: 0.2,
-        dark: 0,
-        diffuse: 1.2,
-        mapSamples: 16000,
-        mapBrightness: 6,
-        baseColor: [0.2, 0.2, 0.2], // Darker dots for white background
-        markerColor: [1, 0.31, 0], // AgentNet orange
-        glowColor: [1, 1, 1], // Light glow
-        markerElevation: 0.04,
-        markers: markers.map((m) => ({ location: m.location, size: 0.08, id: m.id })),
+        devicePixelRatio: Math.min(window.devicePixelRatio || 1, 2),
+        width, height: width,
+        phi: 0, theta: 0.2, dark: 0, diffuse: 1.5,
+        mapSamples: 16000, mapBrightness: 10,
+        baseColor: [1, 1, 1],
+        markerColor: [0, 0, 0],
+        glowColor: [0.94, 0.93, 0.91],
+        markerElevation: 0.02,
+        markers: markers.map((m) => ({ location: m.location, size: 0.012, id: m.id })),
         arcs: arcs.map((a) => ({ from: a.from, to: a.to, id: a.id })),
-        arcColor: [1, 0.31, 0],
-        arcWidth: 1.2,
-        arcHeight: 0.3,
-        opacity: 1, // Full opacity for the globe itself
+        arcColor: [0, 0, 0],
+        arcWidth: 0.5, arcHeight: 0.25, opacity: 0.7,
       })
 
       function animate() {
         if (!isPausedRef.current) phi += speed
-        if (globe) {
-          globe.update({
-            phi: phi + phiOffsetRef.current + dragOffset.current.phi,
-            theta: 0.2 + thetaOffsetRef.current + dragOffset.current.theta,
-          })
-        }
+        globe!.update({
+          phi: phi + phiOffsetRef.current + dragOffset.current.phi,
+          theta: 0.2 + thetaOffsetRef.current + dragOffset.current.theta,
+        })
         animationId = requestAnimationFrame(animate)
       }
       animate()
-      canvas.style.opacity = "1"
+      setTimeout(() => canvas && (canvas.style.opacity = "1"))
     }
 
-    // Small delay ensures DOM has fully painted before reading dimensions
-    const timeout = setTimeout(() => {
-      if (canvas.offsetWidth > 0) {
-        init()
-      } else {
-        const ro = new ResizeObserver((entries) => {
-          if (entries[0]?.contentRect.width > 0) {
-            ro.disconnect()
-            init()
-          }
-        })
-        ro.observe(canvas)
-      }
-    }, 100)
+    if (canvas.offsetWidth > 0) {
+      init()
+    } else {
+      const ro = new ResizeObserver((entries) => {
+        if (entries[0]?.contentRect.width > 0) {
+          ro.disconnect()
+          init()
+        }
+      })
+      ro.observe(canvas)
+    }
 
     return () => {
-      clearTimeout(timeout)
       if (animationId) cancelAnimationFrame(animationId)
       if (globe) globe.destroy()
     }
@@ -221,7 +202,7 @@ export function GlobeCdn({
           key={m.id}
           style={{
             position: "absolute",
-            // @ts-ignore CSS Anchor Positioning
+            // @ts-expect-error CSS Anchor Positioning
             positionAnchor: `--cobe-${m.id}`,
             bottom: "anchor(top)",
             left: "anchor(center)",
@@ -258,7 +239,7 @@ export function GlobeCdn({
           key={t.id}
           style={{
             position: "absolute",
-            // @ts-ignore CSS Anchor Positioning
+            // @ts-expect-error CSS Anchor Positioning
             positionAnchor: `--cobe-arc-${t.id}`,
             bottom: "anchor(top)",
             left: "anchor(center)",

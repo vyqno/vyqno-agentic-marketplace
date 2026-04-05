@@ -2,169 +2,152 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import { useRef } from "react";
-import { ArrowRight, Zap, Activity, Shield, Cpu } from "lucide-react";
+import { ArrowRight, Activity, Shield } from "lucide-react";
 import Link from "next/link";
-import { GlobeCdn } from "@/components/ui/globe-cdn";
+import { GlobeCdn } from "@/components/ui/cobe-globe-cdn";
 
-// ── Technical Pointer ────────────────────────────────────────────────────────
-
-function TechPointer({ 
-  label, 
-  value, 
-  className = "",
-  direction = "down"
-}: { 
-  label: string; 
-  value: string; 
-  className?: string;
-  direction?: "up" | "down";
-}) {
-  return (
-    <div className={`absolute flex flex-col font-mono text-[9px] tracking-tight group ${className}`}>
-      <div className="flex items-center gap-2">
-        <div className="w-1.5 h-1.5 bg-accent rounded-none" />
-        <span className="opacity-40 uppercase">{label}</span>
-      </div>
-      <div className="flex gap-2 items-start mt-1 pl-3">
-        <div className={`w-[1px] ${direction === 'down' ? 'h-10' : 'h-10 -translate-y-10'} bg-black/10 origin-top transition-all duration-500`} />
-        <span className="font-bold uppercase tracking-wider">{value}</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Hero ─────────────────────────────────────────────────────────────────────
+const TICKER_ITEMS = [
+  "X402 PROTOCOL", "AUTONOMOUS AGENTS", "ZERO PLATFORM FEE",
+  "BASE SEPOLIA", "RAG-POWERED", "STREAMING SSE", "ON-CHAIN IDENTITY",
+  "MCP SUPPORT", "USDC PAYMENTS", "AGENTNET",
+];
 
 export default function Hero() {
   const containerRef = useRef(null);
   const { scrollY } = useScroll();
-
-  // Parallax Values
   const bgY = useTransform(scrollY, [0, 1000], [0, 200]);
-  const textX = useTransform(scrollY, [0, 1000], [0, -100]);
-  const globeOpacity = useTransform(scrollY, [0, 500], [0.15, 0.05]);
+
+  const floatY1 = useTransform(scrollY, [0, 800], [0, -80]);
 
   return (
-    <section 
+    <section
       ref={containerRef}
-      className="relative min-h-[110vh] w-full overflow-hidden bg-white selection:bg-accent selection:text-white pt-24"
+      className="relative min-h-screen w-full overflow-hidden bg-white pt-24"
     >
-      {/* Background Architectural Grid */}
-      <motion.div 
+      {/* Grid background */}
+      <motion.div
         style={{ y: bgY }}
-        className="absolute inset-0 bg-architect-grid opacity-[0.4] pointer-events-none" 
+        className="absolute inset-0 bg-architect-grid opacity-[0.4] pointer-events-none"
       />
 
-      {/* Main 12-Column Layout */}
-      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-4 md:grid-cols-12 gap-0 border-x border-black/5">
-        
-        {/* Left Column: Branding & Massive Title */}
-        <div className="col-span-4 md:col-span-8 pt-12 pb-24 border-r border-black/5 pr-8">
-          
-          {/* Internal Metadata */}
-          <div className="flex items-center gap-6 mb-12 font-mono text-[9px] opacity-30 uppercase tracking-[0.3em]">
+      {/* Floating coordinate labels — top-right cluster */}
+      <motion.div
+        style={{ y: floatY1 }}
+        className="absolute top-32 right-8 lg:right-16 flex flex-col gap-3 pointer-events-none select-none"
+      >
+        {[
+          { label: "LAT", value: "37.7749° N" },
+          { label: "LNG", value: "122.4194° W" },
+          { label: "ALT", value: "0.021 km" },
+          { label: "NODE", value: "#1,247" },
+        ].map((item) => (
+          <div key={item.label} className="flex items-center gap-2">
+            <span className="font-mono text-[9px] uppercase tracking-widest text-black/30 w-8">{item.label}</span>
+            <div className="w-[1px] h-3 bg-black/20" />
+            <span className="font-mono text-[9px] text-black/60">{item.value}</span>
+          </div>
+        ))}
+      </motion.div>
+
+
+      <div className="relative z-10 w-full max-w-[1600px] mx-auto px-6 lg:px-12 grid grid-cols-1 md:grid-cols-2 gap-0 border-x border-black/5 min-h-screen">
+
+        {/* LEFT — text */}
+        <div className="flex flex-col justify-center pt-12 pb-24 md:border-r border-black/5 md:pr-12">
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            className="flex items-center gap-6 mb-10 font-mono text-[9px] opacity-30 uppercase tracking-[0.3em]"
+          >
             <span>[ PROTOCOL_SYS_V2 ]</span>
             <div className="h-[1px] w-12 bg-black/20" />
             <span>0x4A_73_96_C7</span>
-          </div>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 1.1, ease: [0.16, 1, 0.3, 1] }}
+            className="font-logo font-extrabold text-[15vw] md:text-[8vw] leading-[1] tracking-[-0.04em] text-black mb-10"
+          >
+            agentnet
+          </motion.h1>
+
+          <motion.h2
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.25, ease: [0.16, 1, 0.3, 1] }}
+            className="text-2xl md:text-3xl font-sans font-medium tracking-tight leading-[1.2] mb-4"
+          >
+            The Global Standard for<br />
+            <span className="text-black/40">Autonomous Intelligence.</span>
+          </motion.h2>
+
+          <motion.p
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.38, ease: [0.16, 1, 0.3, 1] }}
+            className="font-mono text-xs leading-relaxed text-black/50 uppercase max-w-sm mb-10"
+          >
+            Deploy, monetize, and scale autonomous agents on a high-performance
+            X402 liquidity layer.
+          </motion.p>
 
           <motion.div
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.9, delay: 0.5, ease: [0.16, 1, 0.3, 1] }}
           >
-            <h1 className="font-logo text-[18vw] md:text-[14vw] leading-[0.75] tracking-[-0.04em] mb-8 text-black">
-              agentnet
-            </h1>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-16 px-2">
-              <div className="flex flex-col gap-6">
-                <h2 className="text-3xl md:text-4xl font-sans font-medium tracking-tight leading-[1.1]">
-                  The Global Standard for <br />
-                  <span className="text-black/40">Autonomous Intelligence.</span>
-                </h2>
-                <p className="font-mono text-xs leading-relaxed text-black/50 uppercase max-w-sm">
-                  Deploy, monetize, and scale autonomous agents on a high-performance 
-                  X402 liquidity layer. Professional infrastructure for the next web.
-                </p>
-              </div>
+            <Link href="/browse">
+              <button className="group flex items-center justify-between gap-16 bg-black text-white px-8 py-4 w-full max-w-sm border border-black hover:bg-[#FF4500] hover:border-[#FF4500] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]">
+                <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]">Enter Marketplace</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-500" />
+              </button>
+            </Link>
 
-              <div className="flex flex-col justify-end gap-6 items-start">
-                <Link href="/browse" className="w-full">
-                  <button className="group flex items-center justify-between gap-12 bg-black text-white px-8 py-5 rounded-none w-full border border-black hover:bg-accent hover:border-accent transition-all duration-500">
-                    <span className="font-mono text-[10px] font-bold uppercase tracking-[0.2em]">Enter Marketplace</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </Link>
-                <div className="flex gap-4 font-mono text-[9px] uppercase tracking-widest opacity-40">
-                  <span className="flex items-center gap-1">
-                    <Activity className="w-3 h-3 text-accent" />
-                    1.2k Nodes
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Shield className="w-3 h-3" />
-                    Verified
-                  </span>
-                </div>
-              </div>
+            <div className="flex gap-4 font-mono text-[9px] uppercase tracking-widest opacity-40 mt-5">
+              <span className="flex items-center gap-1"><Activity className="w-3 h-3 text-[#FF4500]" />1.2k Nodes</span>
+              <span className="flex items-center gap-1"><Shield className="w-3 h-3" />Verified</span>
             </div>
           </motion.div>
         </div>
 
-        {/* Right Column: Interactive Data Monitor */}
-        <div className="col-span-4 pt-12 relative h-full flex flex-col items-center">
-          
-          <div className="absolute top-12 left-8 right-8 bottom-24 border border-black/5 bg-muted/30 backdrop-blur-sm p-4 overflow-hidden group">
-            {/* Monitor Header */}
-            <div className="flex justify-between items-center mb-6 border-b border-black/5 pb-4">
-              <div className="flex items-center gap-2">
-                <div className="w-1.5 h-1.5 bg-accent animate-pulse" />
-                <span className="font-mono text-[9px] uppercase tracking-widest font-bold">Node_Visualizer</span>
-              </div>
-              <span className="font-mono text-[8px] opacity-30">V.SYST_99</span>
-            </div>
-
-            {/* Globe Visualizer */}
-            <motion.div 
-              style={{ opacity: globeOpacity }}
-              className="w-full h-[400px] mt-8 group-hover:scale-105 transition-transform duration-1000"
-            >
-              <GlobeCdn speed={0.001} />
-            </motion.div>
-
-            {/* Monitor Overlay Stats */}
-            <div className="mt-8 grid grid-cols-2 gap-4 font-mono text-[8px] uppercase tracking-widest border-t border-black/5 pt-4">
-              <div className="flex flex-col gap-1">
-                <span className="opacity-40">Traffic</span>
-                <span className="font-bold">3.4 GB/S</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="opacity-40">Latency</span>
-                <span className="font-bold">14 MS</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="opacity-40">Status</span>
-                <span className="text-accent font-bold">STABLE</span>
-              </div>
-              <div className="flex flex-col gap-1">
-                <span className="opacity-40">Region</span>
-                <span className="font-bold">GLOB_V1</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Technical Floating Annotations */}
-          <TechPointer label="Identity" value="X.Auth.V1" className="top-1/4 -left-12 hidden lg:flex" direction="up" />
-          <TechPointer label="Payment" value="Pay.X402" className="bottom-1/3 -left-20 hidden lg:flex" direction="down" />
+        {/* RIGHT — globe */}
+        <div className="hidden md:flex items-center justify-center p-12">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 1.4, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="w-full max-w-[500px]"
+          >
+            <GlobeCdn />
+          </motion.div>
         </div>
+
       </div>
 
-      {/* Decorative Bottom Tape */}
       <div className="absolute bottom-0 left-0 right-0 h-px bg-black/10" />
-      <div className="absolute bottom-12 left-0 right-0 flex justify-between px-12 font-mono text-[8px] opacity-20 uppercase tracking-[0.5em]">
-        <span>// DESIGNED_IN_SWITZERLAND</span>
-        <span>// 2026_SYNTHVERSE_CORE</span>
-        <span>// ALL_SYSTEMS_OPERATIONAL</span>
+
+      {/* Marquee ticker strip */}
+      <div className="absolute bottom-0 left-0 right-0 border-t border-black/8 overflow-hidden bg-white/60 backdrop-blur-sm">
+        <style>{`
+          @keyframes marquee-left {
+            0%   { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+          }
+        `}</style>
+        <div
+          className="flex whitespace-nowrap py-2"
+          style={{ animation: "marquee-left 28s linear infinite" }}
+        >
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+            <span key={i} className="inline-flex items-center gap-4 px-6 font-mono text-[8px] uppercase tracking-[0.35em] text-black/30">
+              {item}
+              <span className="w-1 h-1 rounded-full bg-black/20 flex-shrink-0" />
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );

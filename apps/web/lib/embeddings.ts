@@ -1,18 +1,27 @@
-import { pipeline, type FeatureExtractionPipeline } from "@huggingface/transformers";
+// Generates embeddings via HuggingFace Inference API (router.huggingface.co)
+// Requires HF_TOKEN env var. Falls back to null so RAG skips vector search gracefully.
+export async function getEmbedding(text: string): Promise<number[] | null> {
+  const hfToken = process.env.HF_TOKEN;
+  if (!hfToken) return null;
 
-let extractor: FeatureExtractionPipeline | null = null;
+  try {
+    const response = await fetch(
+      "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2/pipeline/feature-extraction",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${hfToken}`,
+        },
+        body: JSON.stringify({ inputs: text }),
+      }
+    );
 
-export async function getEmbedding(text: string): Promise<number[]> {
-  if (!extractor) {
-    // Model: all-MiniLM-L6-v2 (384 dimensions)
-    // We use the Xenova prefix as per @huggingface/transformers convention for ONNX models
-    extractor = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    if (!response.ok) return null;
+
+    const data = await response.json();
+    return Array.isArray(data[0]) ? data[0] : data;
+  } catch {
+    return null;
   }
-
-  const output = await extractor(text, {
-    pooling: "mean",
-    normalize: true,
-  });
-
-  return Array.from(output.data as Float32Array);
 }

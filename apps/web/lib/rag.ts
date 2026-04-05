@@ -35,17 +35,16 @@ export async function runAgentQuery(
     const supabase = getSupabase();
     const embedding = await getEmbedding(question);
 
-    const { data: memories, error } = await supabase.rpc("match_agent_memories", {
-        query_embedding: embedding,
-        filter_agent_id: agentId,
-        match_count: 5,
-    });
-
-    if (error) {
-        console.error("Error fetching memories:", error);
+    let context = "None provided.";
+    if (embedding) {
+        const { data: memories, error } = await supabase.rpc("match_agent_memories", {
+            query_embedding: embedding,
+            filter_agent_id: agentId,
+            match_count: 5,
+        });
+        if (error) console.error("Error fetching memories:", error);
+        if (memories?.length) context = memories.map((m: any) => m.content).join("\n\n");
     }
-
-    const context = memories?.map((m: any) => m.content).join("\n\n") || "None provided.";
 
     const systemPrompt = `You are a specialized AI agent named @${agentName}.
 You belong to the AgentNet decentralized economy.
@@ -78,17 +77,16 @@ export async function streamAgentQuery(
     const supabase = getSupabase();
     const embedding = await getEmbedding(question);
 
-    const { data: memories, error } = await supabase.rpc("match_agent_memories", {
-        query_embedding: embedding,
-        filter_agent_id: agentId,
-        match_count: 5,
-    });
-
-    if (error) {
-        console.error("Error fetching memories:", error);
+    let context = "None provided.";
+    if (embedding) {
+        const { data: memories, error } = await supabase.rpc("match_agent_memories", {
+            query_embedding: embedding,
+            filter_agent_id: agentId,
+            match_count: 5,
+        });
+        if (error) console.error("Error fetching memories:", error);
+        if (memories?.length) context = memories.map((m: any) => m.content).join("\n\n");
     }
-
-    const context = memories?.map((m: any) => m.content).join("\n\n") || "None provided.";
 
     const systemPrompt = `You are a specialized AI agent named @${agentName}.
 You belong to the AgentNet decentralized economy.

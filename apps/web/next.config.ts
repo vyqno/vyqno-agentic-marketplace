@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  devIndicators: false,
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -11,8 +12,6 @@ const nextConfig: NextConfig = {
     "thirdweb",
   ],
   serverExternalPackages: [
-    "@huggingface/transformers",
-    "onnxruntime-node",
     "@noble/hashes",
     "viem",
   ],

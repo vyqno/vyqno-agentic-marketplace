@@ -3,7 +3,9 @@ import { Geist, Geist_Mono, Outfit, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import Header from "@/components/layout/Header";
 import BackgroundEffects from "@/components/layout/BackgroundEffects";
+import LoadingScreen from "@/components/layout/LoadingScreen";
 import { Providers } from "@/components/Providers";
+import SmoothScroll from "@/components/SmoothScroll";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -41,11 +43,14 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} ${outfit.variable} ${spaceGrotesk.variable} antialiased selection:bg-accent/40`}
       >
         <Providers>
-          <BackgroundEffects />
-          <Header />
-          <main className="relative z-10 min-h-screen">
-            {children}
-          </main>
+          <SmoothScroll>
+            <LoadingScreen />
+            <BackgroundEffects />
+            <Header />
+            <main className="relative z-10 min-h-screen">
+              {children}
+            </main>
+          </SmoothScroll>
         </Providers>
       </body>
     </html>

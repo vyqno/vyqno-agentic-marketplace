@@ -70,10 +70,10 @@ export default function AgentGrid({ searchQuery }: AgentGridProps) {
   }
 
   return (
-    <section className="relative py-24 px-6 lg:px-12 max-w-[1600px] mx-auto border-x border-black/5">
+    <section className="relative py-16 px-6 lg:px-12 max-w-[1600px] mx-auto border-x border-black/5">
       
       {/* Header & Filters */}
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-12 mb-20">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-12">
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-4">
             <h2 className="font-logo text-5xl md:text-6xl tracking-tighter text-black">
@@ -81,20 +81,20 @@ export default function AgentGrid({ searchQuery }: AgentGridProps) {
             </h2>
             <div className="h-[1px] flex-1 bg-black/5 min-w-[40px]" />
           </div>
-          <div className="flex items-center gap-2 font-mono text-[9px] opacity-40 uppercase tracking-[0.2em]">
+          <div className="flex items-center gap-2 font-mono text-[10px] text-black/70 uppercase tracking-[0.2em]">
             <span>Active_Agents_Catalogue_01</span>
             <div className="w-1 h-1 bg-accent animate-pulse" />
             <span>Live Registry</span>
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 font-mono text-[10px] uppercase tracking-widest border-l border-black/5 pl-8">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-4 font-mono text-[11px] uppercase tracking-widest border-l border-black/20 pl-8">
           {allTags.map((tag) => (
             <button
               key={tag}
               onClick={() => setFilter(tag)}
               className={`relative transition-all ${
-                filter === tag ? "text-accent font-bold" : "text-black/40 hover:text-black"
+                filter === tag ? "text-accent font-bold" : "text-black/60 hover:text-black"
               }`}
             >
               {tag}
@@ -110,9 +110,9 @@ export default function AgentGrid({ searchQuery }: AgentGridProps) {
       </div>
 
       {/* Magazine Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-black/5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 border-t border-l border-black/15">
         {filteredAgents.map((agent, index) => {
-          const isFeatured = index === 0 && filter === "All";
+          const isFeatured = false;
           return (
             <motion.div
               key={agent.id}
@@ -120,64 +120,74 @@ export default function AgentGrid({ searchQuery }: AgentGridProps) {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.05, duration: 0.5 }}
-              className={`group border-r border-b border-black/5 transition-all duration-500 hover:bg-muted/30 ${
-                isFeatured ? "md:col-span-2 md:row-span-2" : ""
-              }`}
+              className="group border-r border-b border-black/15 transition-all duration-500 hover:bg-black/[0.02]"
             >
-              <Link href={`/agent/${agent.id}`} className="block h-full p-8 md:p-12 focus:outline-none">
+              <Link href={`/agent/${agent.id}`} className="block h-full p-6 md:p-8 focus:outline-none">
                 <article className="h-full flex flex-col justify-between">
                   
                   {/* Top: Metadata & Tier */}
-                  <div className="flex justify-between items-start mb-8">
+                  <div className="flex justify-between items-start mb-5">
                     <div className="flex flex-col gap-1">
-                      <span className="font-mono text-[9px] opacity-30 uppercase tracking-widest">Id_{index + 1}</span>
-                      <span className="flex items-center gap-1.5 font-mono text-[9px] font-bold text-accent uppercase tracking-tighter">
+                      <span className="font-mono text-[10px] text-black/60 uppercase tracking-widest"># {String(index + 1).padStart(2, '0')}</span>
+                      <span className="flex items-center gap-1.5 font-mono text-[10px] font-bold text-accent uppercase tracking-tighter">
                         <ArrowUpRight className="w-3 h-3" />
-                        {isFeatured ? "Featured_Node" : "Active_Node"}
+                        Active_Node
                       </span>
                     </div>
                     {agent.is_free && (
-                      <span className="px-2 py-0.5 border border-black/10 font-mono text-[8px] uppercase tracking-widest">
-                        Open_Src
+                      <span className="px-2 py-0.5 border border-accent/30 bg-accent/5 text-accent font-mono text-[8px] uppercase tracking-widest">
+                        Free
                       </span>
                     )}
                   </div>
 
                   {/* Middle: Name & Image */}
-                  <div className="flex flex-col gap-6 mb-12">
-                    <div className="relative w-24 h-24 overflow-hidden border border-black/5 grayscale group-hover:grayscale-0 transition-all duration-1000">
+                  <div className="flex gap-4 items-start mb-6">
+                    <div className="relative flex-shrink-0 w-16 h-16 overflow-hidden border border-black/10 rounded-sm grayscale group-hover:grayscale-0 transition-all duration-700 bg-black/5">
                       <img
                         src={agent.image_url || `https://api.dicebear.com/7.x/bottts/svg?seed=${agent.name}`}
                         alt={agent.name}
-                        className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-1000"
+                        className="w-full h-full object-cover scale-105 group-hover:scale-100 transition-transform duration-700"
                       />
                     </div>
-                    <div className="flex flex-col gap-2">
-                      <h3 className={`font-logo uppercase tracking-tighter text-black ${isFeatured ? 'text-4xl md:text-5xl' : 'text-2xl'}`}>
+                    <div className="flex flex-col gap-1.5 min-w-0">
+                      <h3 className="font-sans font-bold uppercase tracking-tight text-black leading-none text-xl">
                         {agent.name}
                       </h3>
-                      <p className="text-black/50 text-xs font-mono uppercase tracking-widest line-clamp-2 max-w-sm">
+                      <p className="text-black/75 text-[12px] font-sans leading-snug line-clamp-2">
                         {agent.description}
                       </p>
                     </div>
                   </div>
 
-                  {/* Bottom: Transaction Specs */}
-                  <div className="mt-auto flex flex-col gap-8">
-                    <div className="flex items-center gap-8 font-mono text-[9px] uppercase tracking-[0.2em] opacity-40">
-                      <div className="flex flex-col gap-1">
-                        <span>Price</span>
-                        <span className="font-bold text-black opacity-100">{agent.is_free ? "Free" : `${agent.price_usdc} USDC`}</span>
+                  {/* Bottom: Tags + CTA */}
+                  <div className="mt-auto flex flex-col gap-3">
+                    {/* Skill tags */}
+                    {agent.skill_tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1.5">
+                        {(agent.skill_tags as string[]).slice(0, 3).map((tag: string) => (
+                          <span key={tag} className="px-2 py-1 bg-black/8 text-black/75 font-mono text-[10px] uppercase tracking-wide rounded-sm border border-black/10">
+                            {tag}
+                          </span>
+                        ))}
                       </div>
-                      <div className="flex flex-col gap-1">
-                        <span>Queries</span>
-                        <span className="font-bold text-black opacity-100">{(agent.query_count ?? 0).toLocaleString()}</span>
-                      </div>
-                    </div>
+                    )}
 
-                    <div className="flex items-center gap-2 group-hover:gap-4 transition-all duration-500">
-                      <span className="font-mono text-[10px] font-bold uppercase tracking-[0.3em]">Initialize_Access</span>
-                      <div className="h-[1px] w-8 bg-black/20 origin-left scale-x-100 group-hover:scale-x-150 transition-transform duration-500" />
+                    <div className="flex items-center justify-between pt-2 border-t border-black/15">
+                      <div className="flex items-center gap-5">
+                        <div className="flex flex-col">
+                          <span className="font-mono text-[9px] text-black/55 uppercase tracking-widest">Price</span>
+                          <span className="font-sans font-bold text-sm text-black">{agent.is_free ? "Free" : `$${agent.price_usdc}`}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="font-mono text-[9px] text-black/55 uppercase tracking-widest">Queries</span>
+                          <span className="font-sans font-bold text-sm text-black">{(agent.query_count ?? 0).toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 text-accent group-hover:gap-3 transition-all duration-300">
+                        <span className="font-mono text-[9px] font-bold uppercase tracking-widest">Chat</span>
+                        <ArrowUpRight className="w-3 h-3" />
+                      </div>
                     </div>
                   </div>
                 </article>
@@ -188,13 +198,13 @@ export default function AgentGrid({ searchQuery }: AgentGridProps) {
       </div>
 
       {/* Bottom CTA */}
-      <div className="mt-32 flex flex-col items-center gap-8">
+      <div className="mt-16 flex flex-col items-center gap-4">
         <Link href="/browse">
-          <Button variant="outline" className="px-12 py-6 border-black/5 hover:border-black/20 hover:bg-black/5">
-            <span className="font-mono text-[10px] tracking-[0.4em] uppercase">Browse_Full_Registry</span>
+          <Button variant="outline" className="px-10 py-5 border-black/10 hover:border-accent hover:bg-accent/5 transition-colors duration-300">
+            <span className="font-sans font-semibold text-xs tracking-widest uppercase text-black">Browse Full Registry →</span>
           </Button>
         </Link>
-        <span className="font-mono text-[8px] opacity-20 uppercase tracking-[0.6em]">End_Of_Top_Tier_Registry</span>
+        <span className="font-mono text-[8px] opacity-40 uppercase tracking-[0.4em] text-black">Showing top {filteredAgents.length} agents</span>
       </div>
 
     </section>
