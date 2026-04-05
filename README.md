@@ -1,39 +1,53 @@
-<p align="center">
-  <img src=".github/logo.png" width="180" alt="AgentNet Logo" />
-</p>
+<div align="center">
 
-<h1 align="center">AgentNet</h1>
+```
+ █████╗  ██████╗ ███████╗███╗   ██╗████████╗███╗   ██╗███████╗████████╗
+██╔══██╗██╔════╝ ██╔════╝████╗  ██║╚══██╔══╝████╗  ██║██╔════╝╚══██╔══╝
+███████║██║  ███╗█████╗  ██╔██╗ ██║   ██║   ██╔██╗ ██║█████╗     ██║
+██╔══██║██║   ██║██╔══╝  ██║╚██╗██║   ██║   ██║╚██╗██║██╔══╝     ██║
+██║  ██║╚██████╔╝███████╗██║ ╚████║   ██║   ██║ ╚████║███████╗   ██║
+╚═╝  ╚═╝ ╚═════╝ ╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚═╝  ╚═══╝╚══════╝   ╚═╝
+```
 
-<p align="center">
-  <strong>Deploy your knowledge as an AI. Get paid when people ask it questions.</strong>
-</p>
+**The Global Standard for Autonomous Intelligence.**
 
-<p align="center">
-  <a href="https://agentnet-three.vercel.app"><img src="https://img.shields.io/badge/Live-agentnet--three.vercel.app-00F0FF?style=flat-square&logo=vercel&logoColor=white" /></a>
-  <a href="https://www.npmjs.com/package/agentnet-mcp"><img src="https://img.shields.io/badge/MCP-agentnet--mcp-CB3837?style=flat-square&logo=npm&logoColor=white" /></a>
-  <a href="https://sepolia.basescan.org/address/0x3e277fb14ce6e1f4da5391cce381869282fd46b5"><img src="https://img.shields.io/badge/Contract-Base_Sepolia-0052FF?style=flat-square&logo=coinbase&logoColor=white" /></a>
-  <a href="#"><img src="https://img.shields.io/badge/AI-Llama_3.3_70B_via_Groq-8B5CF6?style=flat-square&logoColor=white" /></a>
-</p>
+[![Live](https://img.shields.io/badge/LIVE-agentnet--three.vercel.app-000000?style=for-the-badge&logoColor=white)](https://agentnet-three.vercel.app)
+[![MCP](https://img.shields.io/badge/MCP-agentnet--mcp_on_npm-CB3837?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/package/agentnet-mcp)
+[![Contract](https://img.shields.io/badge/Base_Sepolia-AgentRegistry.sol-0052FF?style=for-the-badge&logo=coinbase&logoColor=white)](https://sepolia.basescan.org/address/0x3e277fb14ce6e1f4da5391cce381869282fd46b5)
+[![LLM](https://img.shields.io/badge/Groq-Llama_3.3_70B-8B5CF6?style=for-the-badge&logoColor=white)](https://groq.com)
 
----
-
-## What is AgentNet?
-
-Imagine you're a fitness coach, a lawyer, a chef, or a developer. You have years of expertise. People constantly ask you questions — but you can only be in one place at a time.
-
-**AgentNet lets you clone your knowledge into an AI agent.**
-
-You upload your notes, documents, and expertise. We create an AI version of you. Anyone in the world can ask it a question for as little as $0.01. You earn money while you sleep.
-
-> **One line:** AgentNet is Fiverr for AI. Experts deploy their knowledge, anyone pays per query, creators earn passively — from the web, WhatsApp, Claude Desktop, or any AI client.
+</div>
 
 ---
 
-## Live Demo
+## What Is AgentNet?
 
-**Web App:** https://agentnet-three.vercel.app
+> You have expertise. The world wants it. But you can only be in one place at a time.
 
-**MCP Server (Claude Desktop / Cursor):**
+**AgentNet turns your knowledge into an AI agent that works 24/7, earns for you while you sleep, and can be queried from anywhere — the web, WhatsApp, Claude Desktop, or any AI client.**
+
+Think of it as:
+- **Fiverr** — but your AI does the work, not you
+- **Substack** — but readers pay per answer, not per month
+- **An API marketplace** — but the APIs are built from human expertise
+
+```
+You upload your notes → AI agent is deployed → Anyone can ask it questions → You earn USDC
+```
+
+A fitness coach, a lawyer, a chef, a developer — anyone who knows something can monetize it.
+Queries start at **$0.01**. Zero platform cut on free agents.
+
+---
+
+## See It In Action
+
+**🌐 Web App** → [agentnet-three.vercel.app](https://agentnet-three.vercel.app)
+
+**💬 WhatsApp** → Text any agent directly. No app needed.
+
+**🤖 Claude Desktop / Cursor / Windsurf** → Via MCP:
+
 ```json
 {
   "mcpServers": {
@@ -48,89 +62,225 @@ You upload your notes, documents, and expertise. We create an AI version of you.
   }
 }
 ```
-Get your API key at: https://agentnet-three.vercel.app/connect
+
+Get your key at: [agentnet-three.vercel.app/connect](https://agentnet-three.vercel.app/connect)
 
 ---
 
-## For Users — No Crypto Knowledge Needed
+## Two Sides of AgentNet
 
-- Sign in with **Google** — no wallet setup required
-- Browse AI experts by skill (DeFi, Security, Research, etc.)
-- Ask any agent a question — free agents answer instantly, paid agents charge fractions of a cent
-- **Pay with UPI / card** via Razorpay — we handle the crypto behind the scenes
-- Or chat with any agent directly from **WhatsApp** — no app needed
-- Or query agents from **Claude Desktop, Cursor, Windsurf** via the MCP server
+<table>
+<tr>
+<td width="50%">
+
+### 👤 For Users — Zero Friction
+- Sign in with **Google** — no wallet, no seed phrases
+- Browse AI experts by skill category
+- Pay with **UPI or card** (Razorpay) — we handle crypto
+- Ask any agent a question — answers stream back in **<2s**
+- Or just text on **WhatsApp**
+
+</td>
+<td width="50%">
+
+### 🚀 For Creators — Deploy Your Digital Twin
+1. Connect with Google or wallet
+2. Upload `.md` files — your knowledge base
+3. Set a price (free or paid per query)
+4. Go live on the marketplace instantly
+5. Earn USDC to your wallet, tracked in your dashboard
+
+</td>
+</tr>
+</table>
 
 ---
 
-## For Creators — Deploy Your Digital Twin
+## Demo Agents Live Now
 
-1. **Connect** with Google or your wallet
-2. **Upload** your knowledge — paste text or upload a `.md` file (up to 10MB)
-3. **Set a price** — free, or charge per query in USDC
-4. **Go live** — your agent is on the marketplace instantly
-5. **Earn** — every query pays directly to your wallet, tracked in your dashboard
+| Agent | Price | Expertise |
+|:------|:-----:|:----------|
+| `@hitesh` | FREE | Web3, Career, DeFi, Crypto ecosystem |
+| `@solidity-auditor` | FREE | Smart contracts, Security, Solidity |
+| `@defi-analyst` | $0.01/q | DeFi, Uniswap, Aave, Risk analysis |
+| `@base-builder` | FREE | Base chain, Deployment, Web3 dev |
+| `@onchain-researcher` | $0.005/q | Blockchain data, Analytics |
 
-Your agent remembers everything you taught it. It answers in your style, using your knowledge — not generic internet information.
+```bash
+# Try it right now
+curl -X POST https://agentnet-three.vercel.app/api/agents/hitesh/ask \
+  -H "Content-Type: application/json" \
+  -H "X-AgentNet-Key: sk-agentnet-YOUR_KEY" \
+  -d '{"question":"how do I survive in web3?"}'
+```
 
 ---
 
-## How It Works (Technical)
+## How It Works — Under The Hood
 
 ```
-User asks a question (web / WhatsApp / MCP / ChatGPT Action)
+┌─────────────────────────────────────────────────────────────────┐
+│                        REQUEST FLOW                             │
+└─────────────────────────────────────────────────────────────────┘
+
+  User (web / WhatsApp / MCP / ChatGPT Action)
         │
         ▼
-  [Auth Gate]             API key (MCP) or x402 payment (web)
-        │
-        ▼
-  [RAG Retrieval]         Embed question → cosine search over agent's pgvector KB
-        │                 (Falls back gracefully if HF_TOKEN not set)
-        ▼
-  [Groq LLM]              llama-3.3-70b-versatile + retrieved context
-        │
-        ▼
-     Answer               Streamed (SSE) or JSON — web, WhatsApp, MCP, or ChatGPT
+  ┌─────────────┐     API Key (sk-agentnet-...)
+  │  Auth Gate  │  ─────────────────────────────── MCP / Programmatic
+  │             │     x402 USDC payment             Web queries
+  └──────┬──────┘
+         │
+         ▼
+  ┌──────────────────┐
+  │   RAG Retrieval  │   HuggingFace all-MiniLM-L6-v2 (384-dim)
+  │                  │   pgvector cosine similarity search
+  │  agent's private │   returns top-k relevant chunks from
+  │  knowledge base  │   the creator's uploaded documents
+  └──────┬───────────┘
+         │
+         ▼
+  ┌──────────────────┐
+  │    Groq LLM      │   llama-3.3-70b-versatile
+  │                  │   System prompt = agent personality
+  │  context-aware   │   + retrieved knowledge chunks
+  │  generation      │   + user question
+  └──────┬───────────┘
+         │
+         ▼
+  Streamed response (SSE) or JSON
+  → Web UI  → WhatsApp  → MCP client  → ChatGPT Action
 ```
 
 ---
 
-## Features
+## Architecture
 
-| Feature | Description |
-|:--------|:------------|
-| **AI Agents** | Each agent has its own RAG knowledge base, wallet, and price |
-| **MCP Server** | `agentnet-mcp` on npm — query agents from Claude Desktop, Cursor, Windsurf |
-| **API Key Auth** | `sk-agentnet-...` keys for programmatic access — tracked in DB, deducts credits |
-| **OpenAPI 3.0** | `/api/openapi` — plug AgentNet into ChatGPT Actions |
-| **Streaming** | SSE streaming endpoint `/api/agents/:name/ask/stream` |
-| **WhatsApp Bot** | Chat with any agent via WhatsApp — type `hi` to start |
-| **Fiat Onramp** | Pay in INR via UPI/card — Razorpay converts to USDC credits |
-| **Google Login** | No wallet setup needed — thirdweb creates a smart account silently |
-| **Document Upload** | Upload `.md` files to give your agent private knowledge |
-| **User Profile** | Manage agents, track total queries, estimated earnings, agents live |
-| **Onchain Identity** | Every agent has a Base Sepolia wallet and is registered on AgentRegistry.sol |
-| **Credit Balance** | USDC credit chip in nav — shared across web and MCP |
-| **Search + Filter** | Search agents by name/description, filter by skill tag, sorted by popularity |
-| **Share Button** | Copy agent profile URL to clipboard |
+```
+agentnet/
+├── apps/
+│   └── web/                        # Next.js 15 app (deployed on Vercel)
+│       ├── app/
+│       │   ├── api/
+│       │   │   ├── agents/         # CRUD + ask + stream + memory
+│       │   │   ├── keys/           # API key management
+│       │   │   ├── topup/          # Razorpay INR → USDC
+│       │   │   ├── whatsapp/       # Twilio webhook
+│       │   │   ├── openapi/        # ChatGPT Actions spec
+│       │   │   └── x402/           # Payment session
+│       │   ├── agent/[id]/         # Agent profile + chat UI
+│       │   ├── browse/             # Search + filter marketplace
+│       │   ├── create/             # Deploy wizard
+│       │   ├── profile/            # Creator dashboard
+│       │   └── connect/            # API key + MCP setup
+│       ├── components/
+│       │   ├── home/               # Hero, Features, WhyAgentNet, HowItWorks
+│       │   ├── layout/             # Header, LoadingScreen
+│       │   └── ui/                 # Globe, sliders, cards
+│       └── lib/
+│           ├── rag.ts              # RAG pipeline + streaming
+│           ├── embeddings.ts       # HF Inference API embeddings
+│           └── supabase.ts         # DB client
+│
+├── packages/
+│   └── mcp-server/                 # agentnet-mcp on npm
+│       ├── src/index.ts            # 7 MCP tools (stdio transport)
+│       └── SKILL.md                # AI agent instructions
+│
+└── contracts/
+    └── AgentRegistry.sol           # On-chain agent registry (Base Sepolia)
+```
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|:------|:-----------|
-| Frontend | Next.js 15, Tailwind v4, Framer Motion |
-| Auth | thirdweb (Google, email, MetaMask, Coinbase Wallet) |
-| Payments | x402 protocol (USDC on Base Sepolia) + Razorpay (INR fiat onramp) |
-| Database | Supabase + pgvector (384-dim embeddings) |
-| LLM | Groq — `llama-3.3-70b-versatile` |
-| Embeddings | HuggingFace Inference API `all-MiniLM-L6-v2` (graceful fallback if no token) |
-| MCP Server | `@modelcontextprotocol/sdk` — stdio transport, 7 tools |
-| WhatsApp | Twilio sandbox |
-| Smart Contracts | Foundry — AgentRegistry.sol on Base Sepolia |
-| Monorepo | Turborepo + pnpm |
-| Deployment | Vercel (serverless, all functions under 250MB) |
+<table>
+<tr><th>Layer</th><th>Technology</th><th>Why</th></tr>
+<tr><td>Frontend</td><td>Next.js 15 + Tailwind v4 + Framer Motion + Lenis</td><td>App Router, smooth scroll, premium animations</td></tr>
+<tr><td>Auth</td><td>thirdweb (Google, email, MetaMask, Coinbase)</td><td>Smart account abstraction — no MetaMask needed</td></tr>
+<tr><td>Payments</td><td>x402 (USDC on Base Sepolia) + Razorpay</td><td>Crypto-native + INR fiat onramp for Indian users</td></tr>
+<tr><td>Database</td><td>Supabase + pgvector</td><td>Vector similarity search (384-dim embeddings)</td></tr>
+<tr><td>LLM</td><td>Groq — llama-3.3-70b-versatile</td><td>Sub-2s inference at scale</td></tr>
+<tr><td>Embeddings</td><td>HuggingFace all-MiniLM-L6-v2</td><td>Lightweight, fast, free tier available</td></tr>
+<tr><td>MCP Server</td><td>@modelcontextprotocol/sdk (stdio)</td><td>Plug into Claude Desktop, Cursor, Windsurf</td></tr>
+<tr><td>WhatsApp</td><td>Twilio sandbox</td><td>Reach users where they already are</td></tr>
+<tr><td>Smart Contracts</td><td>Foundry — Base Sepolia</td><td>Immutable on-chain agent identity</td></tr>
+<tr><td>Monorepo</td><td>Turborepo + pnpm</td><td>Shared packages, fast builds</td></tr>
+<tr><td>Deployment</td><td>Vercel serverless</td><td>Edge-ready, all functions under 250MB</td></tr>
+</table>
+
+---
+
+## MCP Tools (7 total)
+
+Install once, use from any AI client:
+
+```bash
+npx agentnet-mcp  # or add to claude_desktop_config.json
+```
+
+| Tool | What It Does |
+|:-----|:-------------|
+| `list_agents` | Browse all agents — filter by tag or search |
+| `get_agent` | Full profile of a specific agent |
+| `ask_agent` | Query any agent — auto-deducts USDC credits |
+| `find_best_agent` | Describe your task → get top 3 recommendations |
+| `multi_agent_query` | Ask 2–5 agents the same question in parallel |
+| `compare_agents` | Side-by-side answer comparison of two agents |
+| `check_balance` | Your current USDC credit balance |
+
+---
+
+## API Reference
+
+```
+# Agents
+GET    /api/agents                    List agents (search, tag, owner filter)
+POST   /api/agents                    Deploy a new agent
+GET    /api/agents/:name              Get agent profile
+POST   /api/agents/:name/ask          Query agent (x402 or API key)
+POST   /api/agents/:name/ask/stream   Streaming SSE response
+POST   /api/agents/:name/documents    Upload .md knowledge file
+POST   /api/agents/:name/memory       Seed agent memory manually
+
+# Users
+GET    /api/user                      Get user by wallet address
+POST   /api/user                      Create / upsert user
+GET    /api/user/me                   Get current user via X-AgentNet-Key
+
+# API Keys
+GET    /api/keys?wallet=0x...         List keys for wallet
+POST   /api/keys                      Create key → returns sk-agentnet-...
+DELETE /api/keys?id=...&wallet=0x...  Revoke key
+
+# Payments
+POST   /api/topup/create-order        Create Razorpay INR → USDC order
+POST   /api/topup/verify              Verify + credit USDC to user
+
+# Integrations
+GET    /api/openapi                   OpenAPI 3.0 spec (ChatGPT Actions)
+POST   /api/whatsapp                  Twilio webhook (WhatsApp bot)
+GET    /api/x402/session-token        x402 payment session config
+```
+
+---
+
+## Database Schema
+
+```sql
+agents              -- profiles, wallet, price, skill tags, query count
+agent_memories      -- pgvector 384-dim embeddings of uploaded knowledge
+users               -- wallet address, USDC credit balance
+api_keys            -- sk-agentnet-... keys, usage tracking, wallet link
+topup_transactions  -- Razorpay order history (INR → USDC)
+whatsapp_sessions   -- per-number conversation state
+
+-- Custom RPCs
+match_agent_memories(embedding, agent_id, k)  -- cosine similarity search
+increment_query_count(agent_name)             -- atomic counter
+deduct_usdc_credits(wallet, amount)           -- atomic credit deduction
+```
 
 ---
 
@@ -139,18 +289,17 @@ User asks a question (web / WhatsApp / MCP / ChatGPT Action)
 ```bash
 git clone https://github.com/vyqno/vyqno-agentic-marketplace.git
 cd vyqno-agentic-marketplace
-
 pnpm install
 
-# Copy env and fill in your keys
 cp .env.example apps/web/.env.local
+# Fill in your keys (see below)
 
-# Start dev server
 cd apps/web && pnpm dev
 ```
 
 **Required env vars:**
-```
+
+```env
 NEXT_PUBLIC_SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY
 GROQ_API_KEY
@@ -161,178 +310,50 @@ RAZORPAY_KEY_SECRET
 TWILIO_ACCOUNT_SID
 TWILIO_AUTH_TOKEN
 PLATFORM_WALLET_ADDRESS
-HF_TOKEN                          # Optional — enables vector RAG (get free at huggingface.co)
+HF_TOKEN                     # Optional — enables RAG (free at huggingface.co)
 ```
 
 ---
 
-## API Reference
+## What's Built (Shipped)
 
-### Agents
-```
-GET  /api/agents                      List agents (filter: tags, search, owner_wallet)
-POST /api/agents                      Deploy a new agent
-GET  /api/agents/:name                Get agent profile
-POST /api/agents/:name/ask            Query agent — x402 gate (web) or API key gate (MCP)
-POST /api/agents/:name/ask/stream     Streaming SSE query endpoint
-POST /api/agents/:name/documents      Upload .md knowledge file to agent memory
-POST /api/agents/:name/memory         Seed agent memory manually
-```
-
-### Users & Auth
-```
-GET  /api/user                        Get user profile by wallet
-POST /api/user                        Create / upsert user profile
-GET  /api/user/me                     Get current user via X-AgentNet-Key header
-```
-
-### API Keys
-```
-GET    /api/keys?wallet=0x...         List API keys for wallet
-POST   /api/keys                      Create new key (returns sk-agentnet-...)
-DELETE /api/keys?id=...&wallet=0x...  Revoke a key
-```
-
-### Payments
-```
-POST /api/topup/create-order          Create Razorpay INR → USDC order
-POST /api/topup/verify                Verify payment + credit USDC to user
-```
-
-### Integrations
-```
-GET  /api/openapi                     OpenAPI 3.0 spec (ChatGPT Actions compatible)
-POST /api/whatsapp                    Twilio webhook — WhatsApp bot handler
-GET  /api/x402/session-token          x402 payment session config
-```
-
----
-
-## MCP Tools
-
-The `agentnet-mcp` package ([npmjs.com/package/agentnet-mcp](https://www.npmjs.com/package/agentnet-mcp)) exposes 7 tools to any MCP-compatible AI client:
-
-| Tool | Description |
-|:-----|:-----------|
-| `list_agents` | Browse all agents (filter by tag or search) |
-| `get_agent` | Full profile of a specific agent |
-| `ask_agent` | Query an agent (auto-deducts USDC credits) |
-| `find_best_agent` | Describe a task, get top 3 agent recommendations |
-| `multi_agent_query` | Ask 2–5 agents the same question in parallel |
-| `compare_agents` | Side-by-side comparison of two agents |
-| `check_balance` | Your current USDC credit balance |
-
----
-
-## Supabase Schema
-
-Run `supabase-migrations.sql` in your Supabase SQL Editor before starting.
-
-**Tables:**
-- `agents` — agent profiles, wallet, price, skill tags, status
-- `agent_memories` — pgvector 384-dim embeddings of agent knowledge
-- `users` — wallet address, USDC credits balance
-- `api_keys` — `sk-agentnet-...` keys linked to wallets, tracked usage
-- `topup_transactions` — Razorpay order history (INR → USDC)
-- `whatsapp_sessions` — per-number conversation state for the WhatsApp bot
-
-**Custom RPC functions:**
-- `match_agent_memories(query_embedding, filter_agent_id, match_count)` — cosine similarity search
-- `increment_query_count(agent_name)` — atomic query counter
-- `deduct_usdc_credits(p_wallet, p_amount)` — atomic credit deduction
-
----
-
-## Demo Agents
-
-| Agent | Price | Skills |
-|:------|:------|:-------|
-| `@hitesh` | FREE | Web3, Career, DeFi, Crypto ecosystems |
-| `@solidity-auditor` | FREE | Smart contracts, Security, Solidity |
-| `@defi-analyst` | $0.01/query | DeFi, Uniswap, Aave, Risk |
-| `@base-builder` | FREE | Base chain, Deployment, Web3 dev |
-| `@onchain-researcher` | $0.005/query | Blockchain data, Analytics |
-
----
-
-## Verified Tests
-
-All tested against `https://agentnet-three.vercel.app`:
-
-```bash
-# List agents
-curl https://agentnet-three.vercel.app/api/agents
-
-# Create API key
-curl -X POST https://agentnet-three.vercel.app/api/keys \
-  -H "Content-Type: application/json" \
-  -d '{"wallet_address":"0x...","label":"Claude Desktop"}'
-
-# Query agent via API key (no x402 wallet needed)
-curl -X POST https://agentnet-three.vercel.app/api/agents/hitesh/ask \
-  -H "Content-Type: application/json" \
-  -H "X-AgentNet-Key: sk-agentnet-..." \
-  -d '{"question":"how to survive in web3?"}'
-# → returns full markdown answer in ~2s
-
-# Top up USDC credits
-curl -X POST https://agentnet-three.vercel.app/api/topup/create-order \
-  -H "Content-Type: application/json" \
-  -d '{"wallet_address":"0x...","amount_inr":85}'
-# → {"order_id":"order_...","amount_usdc":0.9,"key_id":"rzp_test_..."}
-
-# OpenAPI spec (ChatGPT Actions)
-curl https://agentnet-three.vercel.app/api/openapi
-```
-
----
-
-## Pages
-
-| Route | Description |
-|:------|:------------|
-| `/` | Marketplace homepage with hero + agent grid |
-| `/browse` | Search + filter all agents |
-| `/agent/[id]` | Agent profile + live chat interface |
-| `/create` | Deploy a new agent (wizard) |
-| `/profile` | User dashboard — earnings, agents, top-up |
-| `/connect` | API key management + MCP setup instructions |
-
----
-
-## Roadmap
-
-- [x] Turborepo monorepo + Next.js 15 app
-- [x] Supabase pgvector RAG engine
-- [x] AgentRegistry.sol on Base Sepolia
-- [x] x402 pay-per-query integration
-- [x] Full marketplace UI (Hero, AgentGrid, agent profiles)
+- [x] Turborepo monorepo — Next.js 15 + pnpm workspaces
+- [x] Supabase pgvector RAG engine (384-dim embeddings)
+- [x] AgentRegistry.sol deployed on Base Sepolia
+- [x] x402 pay-per-query with USDC on Base
+- [x] Razorpay fiat onramp — INR → USDC credits
 - [x] Google / email login via thirdweb smart accounts
-- [x] User profiles + earnings dashboard
 - [x] Document upload → agent knowledge seeding
-- [x] Razorpay fiat onramp (INR → USDC credits)
-- [x] WhatsApp bot via Twilio
-- [x] Streaming SSE responses
-- [x] MCP server (`agentnet-mcp`) published on npm
-- [x] API key auth system (`sk-agentnet-...`)
-- [x] OpenAPI 3.0 spec for ChatGPT Actions
-- [x] USDC credit balance in nav
-- [x] Agent search, filter, popularity sort
-- [x] Multi-agent query + compare tools (via MCP)
-- [x] Deployed on Vercel (agentnet-three.vercel.app)
+- [x] Streaming SSE responses (`/ask/stream`)
+- [x] WhatsApp bot via Twilio — text any agent
+- [x] MCP server (`agentnet-mcp`) — published on npm
+- [x] API key auth (`sk-agentnet-...`) with credit deduction
+- [x] OpenAPI 3.0 spec — ChatGPT Actions compatible
+- [x] Full marketplace UI with search, filter, sort by popularity
+- [x] Creator profile — earnings, query stats, agent management
+- [x] USDC credit balance in nav, shared across web + MCP
+- [x] Multi-agent query + compare tools via MCP
+- [x] Lenis smooth scroll + premium framer-motion animations
+- [x] Loading screen with progress bar (first visit only)
+- [x] Live CDN globe visualization on homepage
+
+## What's Next
+
 - [ ] Chrome Extension — AgentNet sidebar on any webpage
-- [ ] Agent-to-Agent (A2A) — agents paying each other
+- [ ] Agent-to-Agent (A2A) — agents paying each other autonomously
+- [ ] Custom domain for agents (yourname.agentnet.xyz)
 - [ ] Personal data sources — Obsidian, browser history, social graph
-- [ ] Custom domain
 
 ---
 
-<p align="center">
-  <sub>Built on Base. Designed for everyone.</sub>
-</p>
+<div align="center">
 
-<p align="center">
-  <a href="https://base.org"><img src="https://img.shields.io/badge/Built_on-Base-0052FF?style=for-the-badge&logo=coinbase&logoColor=white" /></a>
-  <a href="https://agentnet-three.vercel.app"><img src="https://img.shields.io/badge/Live_Demo-Visit-00F0FF?style=for-the-badge&logo=vercel&logoColor=white" /></a>
-  <a href="https://www.npmjs.com/package/agentnet-mcp"><img src="https://img.shields.io/badge/MCP_Package-npm-CB3837?style=for-the-badge&logo=npm&logoColor=white" /></a>
-</p>
+**Built on Base · Powered by Groq · Deployed on Vercel**
+
+[![Base](https://img.shields.io/badge/Built_on-Base-0052FF?style=for-the-badge&logo=coinbase&logoColor=white)](https://base.org)
+[![Live](https://img.shields.io/badge/Live_Demo-Visit_Now-000000?style=for-the-badge&logoColor=white)](https://agentnet-three.vercel.app)
+[![npm](https://img.shields.io/badge/MCP_Package-npm-CB3837?style=for-the-badge&logo=npm&logoColor=white)](https://www.npmjs.com/package/agentnet-mcp)
+
+*Your knowledge. Working 24/7. Even when you're sleeping.*
+
+</div>
