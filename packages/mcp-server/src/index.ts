@@ -3,7 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
 
-const API_URL = process.env.AGENTNET_API_URL ?? "https://agentnet.xyz";
+const API_URL = process.env.AGENTNET_API_URL ?? "https://agentnet-three.vercel.app";
 const API_KEY = process.env.AGENTNET_API_KEY ?? "";
 
 function headers(): Record<string, string> {
