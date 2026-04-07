@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createAgentWallet } from "@/lib/agentkit";
 import { seedAgentMemory } from "@/lib/rag";
 import { createServiceRoleClient } from "@/lib/supabase";
+import { randomBytes } from "crypto";
 
 export const dynamic = "force-dynamic";
 
@@ -118,6 +119,9 @@ export async function POST(request: NextRequest) {
       initialMemory,
       ensName,
       ownerWallet,
+      isCustomEndpoint,
+      customApiUrl,
+      apiSchema,
     } = body;
 
     if (!isNonEmptyString(name)) {
@@ -144,6 +148,23 @@ export async function POST(request: NextRequest) {
         { error: "Description is required (min 10 chars)" },
         { status: 400 }
       );
+    }
+
+    const isCustom = isCustomEndpoint === true;
+    let customUrl = null;
+    let schema = null;
+    let webhookSecret = null;
+
+    if (isCustom) {
+      if (!isNonEmptyString(customApiUrl) || !customApiUrl.startsWith("http")) {
+        return NextResponse.json({ error: "customApiUrl must be a valid HTTP URL" }, { status: 400 });
+      }
+      if (!apiSchema || typeof apiSchema !== "object") {
+        return NextResponse.json({ error: "apiSchema is required for custom endpoints" }, { status: 400 });
+      }
+      customUrl = customApiUrl.trim();
+      schema = apiSchema;
+      webhookSecret = randomBytes(32).toString('hex');
     }
 
     const supabase = createServiceRoleClient();
@@ -207,6 +228,10 @@ export async function POST(request: NextRequest) {
         ens_name: typeof ensName === "string" ? ensName.trim() : null,
         endpoint_url: `/api/agents/${normalizedName}/ask`,
         status: "active",
+        is_custom_endpoint: isCustom,
+        custom_api_url: customUrl,
+        api_schema: schema,
+        webhook_secret: webhookSecret,
       })
       .select()
       .single();
@@ -241,6 +266,7 @@ export async function POST(request: NextRequest) {
         walletAddress,
         chunksCreated,
         message: `Agent "${normalizedName}" created successfully`,
+        webhookSecret: webhookSecret,
       },
       { status: 201 }
     );

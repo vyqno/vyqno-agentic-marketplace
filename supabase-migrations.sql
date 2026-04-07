@@ -13,8 +13,13 @@ CREATE TABLE IF NOT EXISTS users (
   updated_at     TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Add owner_wallet to agents
-ALTER TABLE agents ADD COLUMN IF NOT EXISTS owner_wallet TEXT;
+-- 2. Add owner_wallet & BYOE columns to agents
+ALTER TABLE agents 
+  ADD COLUMN IF NOT EXISTS owner_wallet TEXT,
+  ADD COLUMN IF NOT EXISTS is_custom_endpoint BOOLEAN DEFAULT false,
+  ADD COLUMN IF NOT EXISTS custom_api_url TEXT,
+  ADD COLUMN IF NOT EXISTS api_schema JSONB,
+  ADD COLUMN IF NOT EXISTS webhook_secret TEXT;
 
 -- 3. Topup transactions (Razorpay INR → USDC)
 CREATE TABLE IF NOT EXISTS topup_transactions (

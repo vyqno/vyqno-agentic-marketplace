@@ -5,6 +5,7 @@ import { settlePayment, facilitator } from "thirdweb/x402";
 import { getThirdwebServerClient } from "@/lib/thirdwebServerClient";
 import { baseSepolia } from "thirdweb/chains";
 import { verifyApiKey, getUserCredits, deductCredits } from "@/lib/api-keys";
+import { createHmac } from "crypto";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +24,8 @@ export async function POST(
     const { name } = await params;
     const body = await request.json().catch(() => null);
 
-    if (!body || typeof body.question !== "string" || !body.question.trim()) {
-      return NextResponse.json({ error: "question is required" }, { status: 400 });
+    if (!body) {
+      return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
     }
 
     const supabase = createServiceRoleClient();
@@ -98,6 +99,68 @@ export async function POST(
         }
       }
       // ── End x402 Gate ───────────────────────────────────────────────────────
+    }
+
+    // ── Proxy Gate (BYOE Endpoints) ─────────────────────────────────────────
+    if (agent.is_custom_endpoint && agent.custom_api_url) {
+      try {
+        const targetUrl = new URL(agent.custom_api_url);
+        const forbiddenHosts = ["localhost", "127.0.0.1", "169.254.169.254", "0.0.0.0"];
+        if (forbiddenHosts.includes(targetUrl.hostname) || targetUrl.hostname.endsWith(".internal")) {
+          return NextResponse.json({ error: "Invalid provider endpoint URL" }, { status: 400 });
+        }
+      } catch (e) {
+        return NextResponse.json({ error: "Invalid provider endpoint URL format" }, { status: 400 });
+      }
+
+      const payloadString = JSON.stringify(body);
+      const signature = createHmac("sha256", agent.webhook_secret || "")
+        .update(payloadString)
+        .digest("hex");
+
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000);
+      
+      try {
+        const response = await fetch(agent.custom_api_url, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-AgentNet-Signature": signature,
+          },
+          body: payloadString,
+          signal: controller.signal,
+        });
+        clearTimeout(timeoutId);
+
+        const responseData = await response.json().catch(() => null);
+        
+        supabase.rpc("increment_query_count", { agent_name: name }).then(({ error: e }) => {
+          if (e) console.error("[ask] increment_query_count failed:", e);
+        });
+
+        if (!response.ok) {
+           return NextResponse.json({ error: "Provider returned an error", details: responseData }, { status: 502 });
+        }
+
+        return NextResponse.json({
+          answer: responseData,
+          agentName: agent.name,
+          queryCount: (agent.query_count ?? 0) + 1,
+        });
+
+      } catch (error: any) {
+        clearTimeout(timeoutId);
+        if (error.name === 'AbortError') {
+           return NextResponse.json({ error: "Provider endpoint timed out" }, { status: 504 });
+        }
+        return NextResponse.json({ error: "Failed to reach provider endpoint" }, { status: 502 });
+      }
+    }
+
+    // ── Native Rag Query (Not Custom Endpoint) ──────────────────────────────
+    if (typeof body.question !== "string" || !body.question.trim()) {
+      return NextResponse.json({ error: "question is required for native agents" }, { status: 400 });
     }
 
     const answer = await runAgentQuery(

@@ -61,18 +61,28 @@ server.tool(
     const data = await apiFetch(`/api/agents/${encodeURIComponent(name)}`);
     const a = data.agent ?? data;
     const price = a.is_free ? "FREE" : `$${Number(a.price_usdc).toFixed(4)} USDC per query`;
+    const endpointType = a.is_custom_endpoint ? "Custom Provider Endpoint (Omni-Marketplace)" : "Native RAG Agent";
+    
+    const lines = [
+      `## @${a.name}`,
+      `**Description:** ${a.description}`,
+      `**Type:** ${endpointType}`,
+      `**Price:** ${price}`,
+      `**Skill Tags:** ${a.skill_tags?.join(", ") ?? "none"}`,
+      `**Total Queries:** ${(a.query_count ?? 0).toLocaleString()}`,
+      `**Status:** ${a.status}`,
+      a.wallet_address ? `**Wallet:** ${a.wallet_address} (Base Sepolia)` : "",
+    ];
+    
+    if (a.is_custom_endpoint && a.api_schema) {
+      lines.push(`\n### API Schema (For use with call_custom_agent)`);
+      lines.push(`\`\`\`json\n${JSON.stringify(a.api_schema, null, 2)}\n\`\`\``);
+    }
+    
     return {
       content: [{
         type: "text" as const,
-        text: [
-          `## @${a.name}`,
-          `**Description:** ${a.description}`,
-          `**Price:** ${price}`,
-          `**Skill Tags:** ${a.skill_tags?.join(", ") ?? "none"}`,
-          `**Total Queries:** ${(a.query_count ?? 0).toLocaleString()}`,
-          `**Status:** ${a.status}`,
-          a.wallet_address ? `**Wallet:** ${a.wallet_address} (Base Sepolia)` : "",
-        ].filter(Boolean).join("\n"),
+        text: lines.filter(Boolean).join("\n"),
       }],
     };
   }
@@ -105,6 +115,50 @@ server.tool(
     return {
       content: [{ type: "text" as const, text: `**@${agent_name} says:**\n\n${data.answer}` }],
     };
+  }
+);
+
+server.tool(
+  "call_custom_agent",
+  "Call a custom Omni-Marketplace provider endpoint. Provide the agent name and a JSON stringified payload matching the agent's api_schema.",
+  {
+    agent_name: z.string().describe("Agent name, e.g. 3d-model-maker"),
+    payload_json: z.string().describe("JSON stringified payload that matches the agent's api_schema"),
+  },
+  async ({ agent_name, payload_json }) => {
+    if (!API_KEY) {
+      const data = await apiFetch(`/api/agents/${encodeURIComponent(agent_name)}`).catch(() => null);
+      const a = data?.agent ?? data;
+      if (a && !a.is_free) {
+        return {
+          content: [{
+            type: "text" as const,
+            text: `@${agent_name} is a paid agent ($${Number(a.price_usdc).toFixed(4)}/query). Set AGENTNET_API_KEY in your MCP config to use paid agents. Get a key at: ${API_URL}/connect`,
+          }],
+        };
+      }
+    }
+    
+    let parsedPayload;
+    try {
+      parsedPayload = JSON.parse(payload_json);
+    } catch (e) {
+      return { content: [{ type: "text" as const, text: "Error: payload_json must be valid JSON." }] };
+    }
+
+    try {
+      const data = await apiFetch(`/api/agents/${encodeURIComponent(agent_name)}/ask`, {
+        method: "POST",
+        body: JSON.stringify(parsedPayload),
+      });
+      return {
+        content: [{ type: "text" as const, text: `**@${agent_name} replied:**\n\n\`\`\`json\n${JSON.stringify(data.answer ?? data.details, null, 2)}\n\`\`\`` }],
+      };
+    } catch (e: any) {
+      return {
+        content: [{ type: "text" as const, text: `Error calling agent: ${e.message}` }],
+      };
+    }
   }
 );
 
